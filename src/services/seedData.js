@@ -1,7 +1,7 @@
 import { supabase } from '../config/supabase';
 
 const LS_PREFIX = 'scgmex_';
-const SEED_VERSION = '1.0';
+const SEED_VERSION = '2.0';
 
 function isSeeded() {
   return localStorage.getItem(LS_PREFIX + 'seed_version') === SEED_VERSION;
@@ -267,6 +267,18 @@ export function initSeedData() {
   // Empty tables
   seed('matriz_conversion', []);
   seed('bitacora', []);
+
+  // Fase 3+4 empty tables
+  seed('partida_egreso', []);
+  seed('movimiento_presupuestal_egreso', []);
+  seed('concepto_ingreso', []);
+  seed('movimiento_presupuestal_ingreso', []);
+  seed('bien_patrimonial', []);
+  seed('inventario_conteo', []);
+  seed('fideicomiso', []);
+  seed('instrumento_deuda', []);
+  seed('movimiento_deuda', []);
+  seed('fondo_federal', []);
 
   setSeeded();
   console.log('SCGMEX: Datos semilla inicializados (modo demo)');

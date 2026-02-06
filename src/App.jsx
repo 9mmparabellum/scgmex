@@ -33,6 +33,26 @@ import PresupuestoIngresos from './modules/presupuesto-ingresos/PresupuestoIngre
 import ConceptosIngreso from './modules/presupuesto-ingresos/ConceptosIngreso';
 import MomentosIngreso from './modules/presupuesto-ingresos/MomentosIngreso';
 
+// M6: Patrimonio
+import Bienes from './modules/patrimonio/Bienes';
+import Inventarios from './modules/patrimonio/Inventarios';
+import Fideicomisos from './modules/patrimonio/Fideicomisos';
+
+// M7: Deuda
+import DeudaPublica from './modules/deuda/DeudaPublica';
+
+// M8: Reportes
+import EstadosFinancieros from './modules/reportes/EstadosFinancieros';
+
+// M9: Cuenta Publica
+import CuentaPublica from './modules/cuenta-publica/CuentaPublica';
+
+// M10: Transparencia
+import Transparencia from './modules/transparencia/Transparencia';
+
+// M11: Fondos Federales
+import FondosFederales from './modules/fondos-federales/FondosFederales';
+
 // M12: Seguridad
 import Bitacora from './modules/seguridad/Bitacora';
 import Usuarios from './modules/seguridad/Usuarios';
@@ -85,24 +105,24 @@ export default function App() {
         <Route path={ROUTES.MOMENTOS_INGRESO} element={<MomentosIngreso />} />
 
         {/* M6: Patrimonio */}
-        <Route path={ROUTES.BIENES} element={<PlaceholderPage title="Bienes" modulo="M6" />} />
-        <Route path={ROUTES.INVENTARIOS} element={<PlaceholderPage title="Inventarios" modulo="M6" />} />
-        <Route path={ROUTES.FIDEICOMISOS} element={<PlaceholderPage title="Fideicomisos" modulo="M6" />} />
+        <Route path={ROUTES.BIENES} element={<Bienes />} />
+        <Route path={ROUTES.INVENTARIOS} element={<Inventarios />} />
+        <Route path={ROUTES.FIDEICOMISOS} element={<Fideicomisos />} />
 
         {/* M7: Deuda */}
-        <Route path={ROUTES.DEUDA} element={<PlaceholderPage title="Deuda Publica" modulo="M7" />} />
+        <Route path={ROUTES.DEUDA} element={<DeudaPublica />} />
 
         {/* M8: Reportes */}
-        <Route path={ROUTES.REPORTES} element={<PlaceholderPage title="Estados Financieros" modulo="M8" />} />
+        <Route path={ROUTES.REPORTES} element={<EstadosFinancieros />} />
 
         {/* M9: Cuenta Publica */}
-        <Route path={ROUTES.CUENTA_PUBLICA} element={<PlaceholderPage title="Cuenta Publica" modulo="M9" />} />
+        <Route path={ROUTES.CUENTA_PUBLICA} element={<CuentaPublica />} />
 
         {/* M10: Transparencia */}
-        <Route path={ROUTES.TRANSPARENCIA} element={<PlaceholderPage title="Transparencia" modulo="M10" />} />
+        <Route path={ROUTES.TRANSPARENCIA} element={<Transparencia />} />
 
         {/* M11: Fondos Federales */}
-        <Route path={ROUTES.FONDOS_FEDERALES} element={<PlaceholderPage title="Fondos Federales" modulo="M11" />} />
+        <Route path={ROUTES.FONDOS_FEDERALES} element={<FondosFederales />} />
 
         {/* M12: Seguridad */}
         <Route path={ROUTES.BITACORA} element={<Bitacora />} />

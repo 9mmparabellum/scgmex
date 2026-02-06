@@ -962,3 +962,189 @@ CREATE OR REPLACE TRIGGER trg_audit_concepto_ingreso
 CREATE OR REPLACE TRIGGER trg_audit_movimiento_presupuestal_ingreso
   AFTER INSERT OR UPDATE OR DELETE ON movimiento_presupuestal_ingreso
   FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- FASE 4: PATRIMONIO, DEUDA, FONDOS FEDERALES
+-- ═══════════════════════════════════════════════════════════════════════
+
+-- ── M6: Patrimonio ──────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS bien_patrimonial (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  descripcion VARCHAR(500) NOT NULL,
+  tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('mueble', 'inmueble', 'intangible')),
+  fecha_adquisicion DATE NOT NULL,
+  valor_adquisicion NUMERIC(18,2) NOT NULL DEFAULT 0,
+  depreciacion_acumulada NUMERIC(18,2) NOT NULL DEFAULT 0,
+  vida_util_anios INTEGER,
+  tasa_depreciacion NUMERIC(5,2),
+  ubicacion VARCHAR(300),
+  responsable VARCHAR(200),
+  numero_serie VARCHAR(100),
+  marca VARCHAR(100),
+  modelo VARCHAR(100),
+  estado VARCHAR(20) NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'baja', 'transferido', 'en_comodato')),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  fecha_baja DATE,
+  motivo_baja VARCHAR(500),
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, clave)
+);
+
+CREATE TABLE IF NOT EXISTS inventario_conteo (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID REFERENCES periodo_contable(id),
+  clave VARCHAR(30) NOT NULL,
+  descripcion VARCHAR(500) NOT NULL,
+  fecha_conteo DATE NOT NULL,
+  responsable VARCHAR(200),
+  ubicacion VARCHAR(300),
+  total_bienes INTEGER DEFAULT 0,
+  valor_total NUMERIC(18,2) DEFAULT 0,
+  estado VARCHAR(20) NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador', 'en_proceso', 'finalizado')),
+  observaciones TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, clave)
+);
+
+CREATE TABLE IF NOT EXISTS fideicomiso (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  nombre VARCHAR(300) NOT NULL,
+  tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('administracion', 'inversion', 'garantia', 'traslativo', 'otro')),
+  mandante VARCHAR(300),
+  fiduciario VARCHAR(300),
+  fideicomisario VARCHAR(300),
+  monto_patrimonio NUMERIC(18,2) NOT NULL DEFAULT 0,
+  fecha_constitucion DATE NOT NULL,
+  fecha_extincion DATE,
+  vigencia_anios INTEGER,
+  objeto TEXT,
+  estado VARCHAR(20) NOT NULL DEFAULT 'vigente' CHECK (estado IN ('vigente', 'en_extincion', 'extinto')),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, clave)
+);
+
+-- ── M7: Deuda Publica ───────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS instrumento_deuda (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  descripcion VARCHAR(500) NOT NULL,
+  tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('credito', 'emision', 'otro')),
+  acreedor VARCHAR(300) NOT NULL,
+  monto_original NUMERIC(18,2) NOT NULL,
+  saldo_vigente NUMERIC(18,2) NOT NULL DEFAULT 0,
+  tasa_interes NUMERIC(8,4),
+  tipo_tasa VARCHAR(20) CHECK (tipo_tasa IN ('fija', 'variable', 'mixta')),
+  plazo_meses INTEGER,
+  fecha_contratacion DATE NOT NULL,
+  fecha_vencimiento DATE,
+  moneda VARCHAR(10) NOT NULL DEFAULT 'MXN',
+  destino_recursos TEXT,
+  garantia VARCHAR(300),
+  estado VARCHAR(20) NOT NULL DEFAULT 'vigente' CHECK (estado IN ('vigente', 'pagado', 'reestructurado', 'refinanciado')),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, clave)
+);
+
+CREATE TABLE IF NOT EXISTS movimiento_deuda (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  instrumento_id UUID NOT NULL REFERENCES instrumento_deuda(id) ON DELETE CASCADE,
+  periodo_id UUID REFERENCES periodo_contable(id),
+  tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('disposicion', 'amortizacion', 'pago_intereses', 'comision', 'reestructura', 'otro')),
+  monto NUMERIC(18,2) NOT NULL CHECK (monto >= 0),
+  fecha DATE NOT NULL,
+  descripcion VARCHAR(500),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ── M11: Fondos Federales ───────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS fondo_federal (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  nombre VARCHAR(300) NOT NULL,
+  tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('participacion', 'aportacion', 'subsidio', 'convenio', 'otro')),
+  fuente VARCHAR(300),
+  monto_asignado NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_recibido NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_ejercido NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_reintegrado NUMERIC(18,2) NOT NULL DEFAULT 0,
+  fecha_asignacion DATE,
+  descripcion TEXT,
+  estado VARCHAR(20) NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'cerrado', 'reintegrado')),
+  clasificador_id UUID REFERENCES clasificador_presupuestal(id),
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, clave)
+);
+
+-- ── Indices Fase 4 ──────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_bien_patrimonial_ente_ejercicio ON bien_patrimonial(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_bien_patrimonial_tipo ON bien_patrimonial(tipo);
+CREATE INDEX IF NOT EXISTS idx_inventario_conteo_ente_ejercicio ON inventario_conteo(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_fideicomiso_ente_ejercicio ON fideicomiso(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_instrumento_deuda_ente_ejercicio ON instrumento_deuda(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_deuda_instrumento ON movimiento_deuda(instrumento_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_deuda_periodo ON movimiento_deuda(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_fondo_federal_ente_ejercicio ON fondo_federal(ente_id, ejercicio_id);
+
+-- ── Triggers updated_at Fase 4 ──────────────────────────────────────
+
+CREATE TRIGGER trg_bien_patrimonial_updated_at
+  BEFORE UPDATE ON bien_patrimonial FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_inventario_conteo_updated_at
+  BEFORE UPDATE ON inventario_conteo FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_fideicomiso_updated_at
+  BEFORE UPDATE ON fideicomiso FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_instrumento_deuda_updated_at
+  BEFORE UPDATE ON instrumento_deuda FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_fondo_federal_updated_at
+  BEFORE UPDATE ON fondo_federal FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+-- ── Triggers audit Fase 4 ───────────────────────────────────────────
+
+CREATE TRIGGER trg_audit_bien_patrimonial
+  AFTER INSERT OR UPDATE OR DELETE ON bien_patrimonial FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_inventario_conteo
+  AFTER INSERT OR UPDATE OR DELETE ON inventario_conteo FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_fideicomiso
+  AFTER INSERT OR UPDATE OR DELETE ON fideicomiso FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_instrumento_deuda
+  AFTER INSERT OR UPDATE OR DELETE ON instrumento_deuda FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_movimiento_deuda
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_deuda FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_fondo_federal
+  AFTER INSERT OR UPDATE OR DELETE ON fondo_federal FOR EACH ROW EXECUTE FUNCTION fn_audit_log();

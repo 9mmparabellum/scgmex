@@ -64,6 +64,75 @@ export const TIPOS_MOVIMIENTO_PRESUPUESTAL = [
   { key: 'reduccion', label: 'Reduccion' },
 ];
 
+export const TIPOS_BIEN = {
+  mueble: 'Bien Mueble',
+  inmueble: 'Bien Inmueble',
+  intangible: 'Intangible',
+};
+
+export const ESTADOS_BIEN = {
+  activo: { label: 'Activo', variant: 'success' },
+  baja: { label: 'Baja', variant: 'danger' },
+  transferido: { label: 'Transferido', variant: 'warning' },
+  en_comodato: { label: 'En Comodato', variant: 'info' },
+};
+
+export const ESTADOS_INVENTARIO = {
+  borrador: { label: 'Borrador', variant: 'default' },
+  en_proceso: { label: 'En Proceso', variant: 'warning' },
+  finalizado: { label: 'Finalizado', variant: 'success' },
+};
+
+export const TIPOS_FIDEICOMISO = {
+  administracion: 'Administracion',
+  inversion: 'Inversion',
+  garantia: 'Garantia',
+  traslativo: 'Traslativo',
+  otro: 'Otro',
+};
+
+export const ESTADOS_FIDEICOMISO = {
+  vigente: { label: 'Vigente', variant: 'success' },
+  en_extincion: { label: 'En Extincion', variant: 'warning' },
+  extinto: { label: 'Extinto', variant: 'danger' },
+};
+
+export const TIPOS_DEUDA = {
+  credito: 'Credito Bancario',
+  emision: 'Emision de Deuda',
+  otro: 'Otro',
+};
+
+export const ESTADOS_DEUDA = {
+  vigente: { label: 'Vigente', variant: 'success' },
+  pagado: { label: 'Pagado', variant: 'info' },
+  reestructurado: { label: 'Reestructurado', variant: 'warning' },
+  refinanciado: { label: 'Refinanciado', variant: 'warning' },
+};
+
+export const TIPOS_MOVIMIENTO_DEUDA = [
+  { key: 'disposicion', label: 'Disposicion' },
+  { key: 'amortizacion', label: 'Amortizacion' },
+  { key: 'pago_intereses', label: 'Pago de Intereses' },
+  { key: 'comision', label: 'Comision' },
+  { key: 'reestructura', label: 'Reestructura' },
+  { key: 'otro', label: 'Otro' },
+];
+
+export const TIPOS_FONDO_FEDERAL = {
+  participacion: 'Participacion',
+  aportacion: 'Aportacion',
+  subsidio: 'Subsidio',
+  convenio: 'Convenio',
+  otro: 'Otro',
+};
+
+export const ESTADOS_FONDO = {
+  activo: { label: 'Activo', variant: 'success' },
+  cerrado: { label: 'Cerrado', variant: 'default' },
+  reintegrado: { label: 'Reintegrado', variant: 'warning' },
+};
+
 export const CLASIFICADORES = {
   administrativo: 'Administrativo',
   economico: 'Economico',
