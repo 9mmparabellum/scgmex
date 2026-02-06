@@ -28,39 +28,33 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50 transition-opacity"
+        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
       {/* Dialog */}
       <div
-        className={`relative w-full ${sizeClasses[size] || sizeClasses.md} bg-bg-card rounded-xl shadow-xl transform transition-all`}
+        className={`relative w-full ${sizeClasses[size] || sizeClasses.md} bg-white rounded-lg shadow-2xl transform transition-all overflow-hidden`}
       >
+        {/* Guinda top accent */}
+        <div className="h-1 bg-guinda" />
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+          <h2 className="text-base font-semibold text-text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-secondary transition-colors p-1 rounded-lg hover:bg-bg-hover cursor-pointer"
+            className="text-text-muted hover:text-text-primary transition-colors p-1.5 rounded-lg hover:bg-bg-hover cursor-pointer"
             aria-label="Cerrar"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
           {children}
         </div>
       </div>
