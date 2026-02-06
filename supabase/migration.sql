@@ -691,3 +691,164 @@ BEGIN
   RAISE NOTICE '============================================';
 
 END $$;
+
+-- =============================================================================
+-- FASE 2: Motor Contable (Modulo M3)
+-- Tablas: poliza, movimiento_contable, saldo_cuenta
+-- Funciones: fn_siguiente_numero_poliza, fn_actualizar_saldos
+-- =============================================================================
+
+-- ---------------------------------------------
+-- 2.1 Poliza Contable
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS poliza (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id) ON DELETE CASCADE,
+  tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('ingreso', 'egreso', 'diario', 'ajuste', 'cierre')),
+  numero_poliza INTEGER NOT NULL,
+  fecha DATE NOT NULL,
+  descripcion TEXT NOT NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador', 'pendiente', 'aprobada', 'cancelada')),
+  total_debe NUMERIC(18,2) NOT NULL DEFAULT 0,
+  total_haber NUMERIC(18,2) NOT NULL DEFAULT 0,
+  aprobado_por UUID,
+  aprobado_en TIMESTAMPTZ,
+  cancelado_por UUID,
+  cancelado_en TIMESTAMPTZ,
+  motivo_cancelacion TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, tipo, numero_poliza)
+);
+
+-- ---------------------------------------------
+-- 2.2 Movimiento Contable
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS movimiento_contable (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  poliza_id UUID NOT NULL REFERENCES poliza(id) ON DELETE CASCADE,
+  numero_linea INTEGER NOT NULL,
+  cuenta_id UUID NOT NULL REFERENCES plan_de_cuentas(id),
+  concepto VARCHAR(500) NOT NULL,
+  debe NUMERIC(18,2) NOT NULL DEFAULT 0 CHECK (debe >= 0),
+  haber NUMERIC(18,2) NOT NULL DEFAULT 0 CHECK (haber >= 0),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(poliza_id, numero_linea),
+  CHECK (debe > 0 OR haber > 0),
+  CHECK (NOT (debe > 0 AND haber > 0))
+);
+
+-- ---------------------------------------------
+-- 2.3 Saldo de Cuenta (materializado)
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS saldo_cuenta (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id) ON DELETE CASCADE,
+  cuenta_id UUID NOT NULL REFERENCES plan_de_cuentas(id),
+  saldo_inicial NUMERIC(18,2) NOT NULL DEFAULT 0,
+  total_debe NUMERIC(18,2) NOT NULL DEFAULT 0,
+  total_haber NUMERIC(18,2) NOT NULL DEFAULT 0,
+  saldo_final NUMERIC(18,2) NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, periodo_id, cuenta_id)
+);
+
+-- ---------------------------------------------
+-- 2.4 Indices
+-- ---------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_poliza_ente_ejercicio ON poliza(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_poliza_periodo ON poliza(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_poliza_estado ON poliza(estado);
+CREATE INDEX IF NOT EXISTS idx_poliza_tipo ON poliza(tipo);
+CREATE INDEX IF NOT EXISTS idx_poliza_fecha ON poliza(fecha);
+CREATE INDEX IF NOT EXISTS idx_movimiento_poliza ON movimiento_contable(poliza_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_cuenta ON movimiento_contable(cuenta_id);
+CREATE INDEX IF NOT EXISTS idx_saldo_ente_ejercicio_periodo ON saldo_cuenta(ente_id, ejercicio_id, periodo_id);
+CREATE INDEX IF NOT EXISTS idx_saldo_cuenta ON saldo_cuenta(cuenta_id);
+
+-- ---------------------------------------------
+-- 2.5 Funcion: Siguiente numero de poliza
+-- ---------------------------------------------
+CREATE OR REPLACE FUNCTION fn_siguiente_numero_poliza(
+  p_ente_id UUID,
+  p_ejercicio_id UUID,
+  p_tipo VARCHAR
+)
+RETURNS INTEGER AS $$
+DECLARE
+  v_siguiente INTEGER;
+BEGIN
+  SELECT COALESCE(MAX(numero_poliza), 0) + 1
+    INTO v_siguiente
+    FROM poliza
+   WHERE ente_id = p_ente_id
+     AND ejercicio_id = p_ejercicio_id
+     AND tipo = p_tipo;
+  RETURN v_siguiente;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ---------------------------------------------
+-- 2.6 Funcion: Actualizar saldos al aprobar poliza
+-- ---------------------------------------------
+CREATE OR REPLACE FUNCTION fn_actualizar_saldos(p_poliza_id UUID)
+RETURNS VOID AS $$
+DECLARE
+  v_poliza RECORD;
+  v_mov RECORD;
+BEGIN
+  SELECT * INTO v_poliza FROM poliza WHERE id = p_poliza_id AND estado = 'aprobada';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Poliza no encontrada o no aprobada: %', p_poliza_id;
+  END IF;
+
+  FOR v_mov IN
+    SELECT mc.cuenta_id, mc.debe, mc.haber, pc.naturaleza
+      FROM movimiento_contable mc
+      JOIN plan_de_cuentas pc ON pc.id = mc.cuenta_id
+     WHERE mc.poliza_id = p_poliza_id
+  LOOP
+    INSERT INTO saldo_cuenta (ente_id, ejercicio_id, periodo_id, cuenta_id, saldo_inicial, total_debe, total_haber, saldo_final)
+    VALUES (v_poliza.ente_id, v_poliza.ejercicio_id, v_poliza.periodo_id, v_mov.cuenta_id, 0, v_mov.debe, v_mov.haber, 0)
+    ON CONFLICT (ente_id, ejercicio_id, periodo_id, cuenta_id)
+    DO UPDATE SET
+      total_debe = saldo_cuenta.total_debe + EXCLUDED.total_debe,
+      total_haber = saldo_cuenta.total_haber + EXCLUDED.total_haber,
+      updated_at = now();
+
+    UPDATE saldo_cuenta
+       SET saldo_final = CASE
+             WHEN v_mov.naturaleza = 'deudora'
+             THEN saldo_inicial + total_debe - total_haber
+             ELSE saldo_inicial - total_debe + total_haber
+           END
+     WHERE ente_id = v_poliza.ente_id
+       AND ejercicio_id = v_poliza.ejercicio_id
+       AND periodo_id = v_poliza.periodo_id
+       AND cuenta_id = v_mov.cuenta_id;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ---------------------------------------------
+-- 2.7 Triggers
+-- ---------------------------------------------
+CREATE OR REPLACE TRIGGER trg_poliza_updated_at
+  BEFORE UPDATE ON poliza
+  FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE OR REPLACE TRIGGER trg_audit_poliza
+  AFTER INSERT OR UPDATE OR DELETE ON poliza
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE OR REPLACE TRIGGER trg_audit_movimiento_contable
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_contable
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE OR REPLACE TRIGGER trg_audit_saldo_cuenta
+  AFTER INSERT OR UPDATE OR DELETE ON saldo_cuenta
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();

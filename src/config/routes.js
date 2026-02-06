@@ -16,6 +16,7 @@ export const ROUTES = {
   CONTABILIDAD: '/contabilidad',
   POLIZAS: '/contabilidad/polizas',
   POLIZA_NUEVA: '/contabilidad/polizas/nueva',
+  POLIZA_DETALLE: '/contabilidad/polizas/:id',
   LIBRO_DIARIO: '/contabilidad/libro-diario',
   LIBRO_MAYOR: '/contabilidad/libro-mayor',
   BALANZA: '/contabilidad/balanza',

@@ -16,6 +16,13 @@ import PlanCuentas from './modules/catalogo/PlanCuentas';
 import Clasificadores from './modules/catalogo/Clasificadores';
 import Matrices from './modules/catalogo/Matrices';
 
+// M3: Contabilidad
+import PolizasContables from './modules/contabilidad/PolizasContables';
+import PolizaForm from './modules/contabilidad/PolizaForm';
+import LibroDiario from './modules/contabilidad/LibroDiario';
+import LibroMayor from './modules/contabilidad/LibroMayor';
+import BalanzaComprobacion from './modules/contabilidad/BalanzaComprobacion';
+
 // M12: Seguridad
 import Bitacora from './modules/seguridad/Bitacora';
 import Usuarios from './modules/seguridad/Usuarios';
@@ -50,11 +57,12 @@ export default function App() {
         <Route path={ROUTES.MATRICES} element={<Matrices />} />
 
         {/* M3: Contabilidad */}
-        <Route path={ROUTES.POLIZAS} element={<PlaceholderPage title="Polizas Contables" modulo="M3" />} />
-        <Route path={ROUTES.POLIZA_NUEVA} element={<PlaceholderPage title="Nueva Poliza" modulo="M3" />} />
-        <Route path={ROUTES.LIBRO_DIARIO} element={<PlaceholderPage title="Libro Diario" modulo="M3" />} />
-        <Route path={ROUTES.LIBRO_MAYOR} element={<PlaceholderPage title="Libro Mayor" modulo="M3" />} />
-        <Route path={ROUTES.BALANZA} element={<PlaceholderPage title="Balanza de Comprobacion" modulo="M3" />} />
+        <Route path={ROUTES.POLIZAS} element={<PolizasContables />} />
+        <Route path={ROUTES.POLIZA_NUEVA} element={<PolizaForm />} />
+        <Route path={ROUTES.POLIZA_DETALLE} element={<PolizaForm />} />
+        <Route path={ROUTES.LIBRO_DIARIO} element={<LibroDiario />} />
+        <Route path={ROUTES.LIBRO_MAYOR} element={<LibroMayor />} />
+        <Route path={ROUTES.BALANZA} element={<BalanzaComprobacion />} />
 
         {/* M4: Presupuesto Egresos */}
         <Route path={ROUTES.PRESUPUESTO_EGRESOS} element={<PlaceholderPage title="Presupuesto de Egresos" modulo="M4" />} />

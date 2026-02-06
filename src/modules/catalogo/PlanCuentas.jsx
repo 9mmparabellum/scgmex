@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useList, useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
+import { buildTree } from '../../utils/treeHelpers';
 import TreeView from '../../components/ui/TreeView';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -51,22 +52,6 @@ const TIPO_BADGE_VARIANT = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function buildTree(items) {
-  const map = {};
-  const roots = [];
-  items.forEach((item) => {
-    map[item.id] = { ...item, children: [] };
-  });
-  items.forEach((item) => {
-    if (item.padre_id && map[item.padre_id]) {
-      map[item.padre_id].children.push(map[item.id]);
-    } else {
-      roots.push(map[item.id]);
-    }
-  });
-  return roots;
-}
 
 function tipoLabel(value) {
   const found = TIPOS_CUENTA.find((t) => t.value === value);
