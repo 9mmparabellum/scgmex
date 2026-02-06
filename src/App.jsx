@@ -6,6 +6,20 @@ import Login from './modules/auth/Login';
 import Dashboard from './modules/dashboard/Dashboard';
 import PlaceholderPage from './components/shared/PlaceholderPage';
 
+// M1: Configuracion
+import EntesPublicos from './modules/configuracion/EntesPublicos';
+import EjerciciosFiscales from './modules/configuracion/EjerciciosFiscales';
+import PeriodosContables from './modules/configuracion/PeriodosContables';
+
+// M2: Catalogo
+import PlanCuentas from './modules/catalogo/PlanCuentas';
+import Clasificadores from './modules/catalogo/Clasificadores';
+import Matrices from './modules/catalogo/Matrices';
+
+// M12: Seguridad
+import Bitacora from './modules/seguridad/Bitacora';
+import Usuarios from './modules/seguridad/Usuarios';
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
@@ -26,14 +40,14 @@ export default function App() {
         <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
 
         {/* M1: Configuracion */}
-        <Route path={ROUTES.ENTES} element={<PlaceholderPage title="Entes Publicos" modulo="M1" />} />
-        <Route path={ROUTES.EJERCICIOS} element={<PlaceholderPage title="Ejercicios Fiscales" modulo="M1" />} />
-        <Route path={ROUTES.PERIODOS} element={<PlaceholderPage title="Periodos Contables" modulo="M1" />} />
+        <Route path={ROUTES.ENTES} element={<EntesPublicos />} />
+        <Route path={ROUTES.EJERCICIOS} element={<EjerciciosFiscales />} />
+        <Route path={ROUTES.PERIODOS} element={<PeriodosContables />} />
 
         {/* M2: Catalogo */}
-        <Route path={ROUTES.PLAN_CUENTAS} element={<PlaceholderPage title="Plan de Cuentas" modulo="M2" />} />
-        <Route path={ROUTES.CLASIFICADORES} element={<PlaceholderPage title="Clasificadores Presupuestales" modulo="M2" />} />
-        <Route path={ROUTES.MATRICES} element={<PlaceholderPage title="Matrices de Conversion" modulo="M2" />} />
+        <Route path={ROUTES.PLAN_CUENTAS} element={<PlanCuentas />} />
+        <Route path={ROUTES.CLASIFICADORES} element={<Clasificadores />} />
+        <Route path={ROUTES.MATRICES} element={<Matrices />} />
 
         {/* M3: Contabilidad */}
         <Route path={ROUTES.POLIZAS} element={<PlaceholderPage title="Polizas Contables" modulo="M3" />} />
@@ -73,8 +87,8 @@ export default function App() {
         <Route path={ROUTES.FONDOS_FEDERALES} element={<PlaceholderPage title="Fondos Federales" modulo="M11" />} />
 
         {/* M12: Seguridad */}
-        <Route path={ROUTES.BITACORA} element={<PlaceholderPage title="Bitacora de Auditoria" modulo="M12" />} />
-        <Route path={ROUTES.USUARIOS} element={<PlaceholderPage title="Gestion de Usuarios" modulo="M12" />} />
+        <Route path={ROUTES.BITACORA} element={<Bitacora />} />
+        <Route path={ROUTES.USUARIOS} element={<Usuarios />} />
 
         {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

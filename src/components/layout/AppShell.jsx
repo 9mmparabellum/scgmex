@@ -9,7 +9,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-bg-main">
       <Sidebar />
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-60' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
         <Header />
         <main className="p-6">
           <Outlet />

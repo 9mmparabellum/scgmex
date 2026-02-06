@@ -1,35 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1a365d;
-  --color-primary-light: #2a4a7f;
-  --color-primary-dark: #0f2440;
-  --color-secondary: #2f855a;
-  --color-secondary-light: #38a169;
-  --color-accent: #d69e2e;
-  --color-accent-light: #ecc94b;
+  /* Paleta Gobierno de Mexico 2024-2030 */
+  --color-guinda: #9D2449;
+  --color-guinda-dark: #621132;
+  --color-guinda-light: #B8446B;
+  --color-dorado: #BC955C;
+  --color-dorado-light: #D4B07A;
+  --color-dorado-dark: #A07A3E;
+  --color-verde: #235B4E;
+  --color-verde-light: #2D7566;
+  --color-verde-dark: #1A4439;
 
-  --color-bg-main: #f7fafc;
-  --color-bg-sidebar: #1a365d;
-  --color-bg-card: #ffffff;
-  --color-bg-header: #ffffff;
-  --color-bg-hover: #edf2f7;
-  --color-bg-active: #e2e8f0;
-  --color-bg-input: #ffffff;
+  --color-primary: #9D2449;
+  --color-primary-light: #B8446B;
+  --color-primary-dark: #621132;
+  --color-secondary: #235B4E;
+  --color-secondary-light: #2D7566;
+  --color-accent: #BC955C;
+  --color-accent-light: #D4B07A;
 
-  --color-text-primary: #1a202c;
-  --color-text-secondary: #4a5568;
-  --color-text-muted: #a0aec0;
-  --color-text-sidebar: #e2e8f0;
-  --color-text-sidebar-active: #ffffff;
+  --color-bg-main: #F5F5F5;
+  --color-bg-sidebar: #621132;
+  --color-bg-card: #FFFFFF;
+  --color-bg-header: #FFFFFF;
+  --color-bg-hover: #F0F0F0;
+  --color-bg-active: #E8E8E8;
+  --color-bg-input: #FFFFFF;
 
-  --color-border: #e2e8f0;
-  --color-border-focus: #3182ce;
+  --color-text-primary: #161A1D;
+  --color-text-secondary: #4A4A4A;
+  --color-text-muted: #98989A;
+  --color-text-sidebar: #E8C4D0;
+  --color-text-sidebar-active: #FFFFFF;
 
-  --color-success: #38a169;
-  --color-warning: #d69e2e;
-  --color-danger: #e53e3e;
-  --color-info: #3182ce;
+  --color-border: #E0E0E0;
+  --color-border-focus: #9D2449;
+
+  --color-success: #235B4E;
+  --color-warning: #BC955C;
+  --color-danger: #C62828;
+  --color-info: #1565C0;
 }
 
 * {
@@ -39,7 +50,7 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--color-bg-main);
   color: var(--color-text-primary);
   min-height: 100vh;
