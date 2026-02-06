@@ -269,7 +269,7 @@ export default function EjerciciosFiscales() {
       </div>
 
       {/* Table */}
-      <div className="bg-bg-card rounded-xl border border-border p-4">
+      <div className="bg-white rounded-lg card-shadow p-4">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <svg

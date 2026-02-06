@@ -30,93 +30,153 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-[#080808]">
-      {/* Abstract background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-guinda/20 blur-[140px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-guinda-dark/30 blur-[140px]" />
-        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-dorado/8 blur-[120px]" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-bg-main">
+      <div className="w-full max-w-[450px]">
+        {/* Card */}
+        <div className="bg-white rounded-lg card-shadow overflow-hidden">
+          {/* Guinda top strip */}
+          <div className="h-1 bg-guinda rounded-t-lg" />
 
-      {/* Card */}
-      <div className="relative w-full max-w-[480px]">
-        <div className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 shadow-2xl">
-          {/* Logo */}
-          <div className="flex justify-center mb-10">
-            <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-guinda to-guinda-dark rounded-2xl flex items-center justify-center shadow-lg shadow-guinda/20">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="px-8 pt-8 pb-10">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <div className="w-[72px] h-[72px] bg-guinda rounded-full flex items-center justify-center">
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
                 </svg>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-dorado rounded-full border-[3px] border-[#080808]" />
             </div>
-          </div>
 
-          {/* Title */}
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-white tracking-wide">SCGMEX</h1>
-            <p className="text-white/30 text-base mt-2">Contabilidad Gubernamental</p>
-          </div>
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-text-heading tracking-wide">
+                SCGMEX
+              </h1>
+              <p className="text-text-muted text-sm mt-1">
+                Sistema de Contabilidad Gubernamental
+              </p>
+            </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm text-center">
-                {error}
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-3 bg-danger/10 border border-danger/20 rounded-md text-danger text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-text-heading mb-1.5">
+                  Correo electronico
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg
+                      className="h-[18px] w-[18px] text-text-muted"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-[40px] pl-10 pr-4 bg-white border border-border rounded-md text-[0.9375rem] text-text-heading placeholder:text-text-muted focus:outline-none focus:border-guinda focus:ring-1 focus:ring-guinda/30 transition-colors"
+                    placeholder="admin@scgmex.gob.mx"
+                    required
+                  />
+                </div>
               </div>
-            )}
 
-            <div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-4 bg-white/[0.06] border border-white/[0.08] rounded-xl text-white text-base placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
-                placeholder="Correo electronico"
-                required
-              />
-            </div>
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-text-heading mb-1.5">
+                  Contrasena
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg
+                      className="h-[18px] w-[18px] text-text-muted"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full h-[40px] pl-10 pr-4 bg-white border border-border rounded-md text-[0.9375rem] text-text-heading placeholder:text-text-muted focus:outline-none focus:border-guinda focus:ring-1 focus:ring-guinda/30 transition-colors"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
 
-            <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-4 bg-white/[0.06] border border-white/[0.08] rounded-xl text-white text-base placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
-                placeholder="Contrasena"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-guinda text-white font-semibold rounded-xl hover:bg-guinda-light active:scale-[0.98] transition-all disabled:opacity-50 text-base mt-1 cursor-pointer"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Ingresando...
-                </span>
-              ) : 'Ingresar'}
-            </button>
-          </form>
-
-          {/* Demo hint */}
-          <p className="text-white/20 text-sm text-center mt-8">
-            Demo — cualquier credencial es valida
-          </p>
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-[44px] bg-guinda text-white font-semibold text-[0.9375rem] rounded-md hover:bg-guinda-dark active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Ingresando...
+                  </span>
+                ) : (
+                  'Iniciar Sesion'
+                )}
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* Bottom subtle branding */}
-        <div className="flex items-center justify-center gap-2.5 mt-8">
-          <div className="w-1.5 h-1.5 rounded-full bg-dorado/40" />
-          <span className="text-white/15 text-xs tracking-widest uppercase">Gobierno de Mexico</span>
-          <div className="w-1.5 h-1.5 rounded-full bg-dorado/40" />
+        {/* Footer text */}
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-text-muted text-xs">
+            Demo — cualquier credencial es valida
+          </p>
+          <p className="text-text-secondary text-xs font-medium tracking-wide">
+            Gobierno de Mexico
+          </p>
         </div>
       </div>
     </div>

@@ -203,7 +203,7 @@ export default function Bitacora() {
       </div>
 
       {/* Filters */}
-      <div className="bg-bg-card rounded-xl border border-border p-4 mb-4">
+      <div className="bg-white rounded-lg card-shadow p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
           <Select
             label="Tabla"
@@ -227,7 +227,7 @@ export default function Bitacora() {
               type="date"
               value={filterFechaDesde}
               onChange={(e) => setFilterFechaDesde(e.target.value)}
-              className="block w-full rounded-lg border border-border bg-bg-input text-text-primary text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="block w-full h-[40px] rounded-md border border-border bg-white text-text-heading text-[0.9375rem] px-3.5 focus:outline-none focus:ring-2 focus:ring-guinda/25 focus:border-guinda transition-all duration-150"
             />
           </div>
           <div className="w-full">
@@ -238,7 +238,7 @@ export default function Bitacora() {
               type="date"
               value={filterFechaHasta}
               onChange={(e) => setFilterFechaHasta(e.target.value)}
-              className="block w-full rounded-lg border border-border bg-bg-input text-text-primary text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="block w-full h-[40px] rounded-md border border-border bg-white text-text-heading text-[0.9375rem] px-3.5 focus:outline-none focus:ring-2 focus:ring-guinda/25 focus:border-guinda transition-all duration-150"
             />
           </div>
           <div className="flex items-end">
@@ -257,7 +257,7 @@ export default function Bitacora() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-bg-card rounded-xl border border-border p-5">
+      <div className="bg-white rounded-lg card-shadow p-5">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <svg
@@ -350,7 +350,7 @@ export default function Bitacora() {
                 Datos Anteriores
               </label>
               {selectedEntry.datos_anteriores ? (
-                <pre className="bg-bg-hover rounded-lg border border-border p-3 text-xs text-text-secondary font-mono overflow-x-auto max-h-60 overflow-y-auto">
+                <pre className="bg-bg-hover rounded-md p-3 text-xs text-text-secondary font-mono overflow-x-auto max-h-60 overflow-y-auto">
                   <code>{formatJSON(selectedEntry.datos_anteriores)}</code>
                 </pre>
               ) : (
@@ -364,7 +364,7 @@ export default function Bitacora() {
                 Datos Nuevos
               </label>
               {selectedEntry.datos_nuevos ? (
-                <pre className="bg-bg-hover rounded-lg border border-border p-3 text-xs text-text-secondary font-mono overflow-x-auto max-h-60 overflow-y-auto">
+                <pre className="bg-bg-hover rounded-md p-3 text-xs text-text-secondary font-mono overflow-x-auto max-h-60 overflow-y-auto">
                   <code>{formatJSON(selectedEntry.datos_nuevos)}</code>
                 </pre>
               ) : (

@@ -323,7 +323,7 @@ export default function PlanCuentas() {
       {!isLoading && !isError && (
         <div className="flex gap-6">
           {/* Left panel — Tree View */}
-          <div className="w-1/3 bg-bg-card rounded-xl border border-border p-4 max-h-[calc(100vh-240px)] overflow-y-auto">
+          <div className="w-1/3 bg-white rounded-lg card-shadow p-4 max-h-[calc(100vh-240px)] overflow-y-auto">
             <h2 className="text-sm font-semibold text-text-primary mb-3">
               Estructura de Cuentas
             </h2>
@@ -358,7 +358,7 @@ export default function PlanCuentas() {
           </div>
 
           {/* Right panel — Detail */}
-          <div className="w-2/3 bg-bg-card rounded-xl border border-border p-6 max-h-[calc(100vh-240px)] overflow-y-auto">
+          <div className="w-2/3 bg-white rounded-lg card-shadow p-6 max-h-[calc(100vh-240px)] overflow-y-auto">
             {selectedAccount ? (
               <div>
                 {/* Detail header */}

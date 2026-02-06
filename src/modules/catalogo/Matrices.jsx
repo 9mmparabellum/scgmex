@@ -322,7 +322,7 @@ export default function Matrices() {
               onChange={(e) => handleChange('descripcion', e.target.value)}
               placeholder="Descripcion de la regla de conversion (opcional)"
               rows={3}
-              className="block w-full rounded-lg border border-border bg-bg-input text-text-primary text-sm px-3 py-2 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
+              className="block w-full rounded-md border border-border bg-white text-text-heading text-[0.9375rem] px-3.5 py-2.5 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-guinda/25 focus:border-guinda transition-all duration-150 resize-none"
             />
           </div>
 

@@ -270,7 +270,7 @@ export default function Usuarios() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-bg-card rounded-xl border border-border p-5">
+      <div className="bg-white rounded-lg card-shadow p-5">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <svg
@@ -357,7 +357,7 @@ export default function Usuarios() {
 
           {/* Role description */}
           {form.rol && (
-            <div className="bg-bg-hover rounded-lg border border-border p-3">
+            <div className="bg-bg-hover rounded-md p-3">
               <p className="text-xs text-text-muted">
                 <span className="font-semibold text-text-secondary">Rol seleccionado: </span>
                 {ROL_LABEL_MAP[form.rol]}

@@ -173,7 +173,7 @@ export default function Clasificadores() {
               'px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer',
               selectedTipo === tipo.value
                 ? 'bg-primary text-white'
-                : 'bg-bg-card border border-border text-text-secondary hover:bg-bg-hover',
+                : 'bg-white card-shadow text-text-secondary hover:bg-bg-hover',
             ].join(' ')}
           >
             {tipo.label}
@@ -220,7 +220,7 @@ export default function Clasificadores() {
             <label className="block text-sm font-medium text-text-secondary mb-1">
               Tipo de clasificador
             </label>
-            <div className="block w-full rounded-lg border border-border bg-bg-hover text-text-muted text-sm px-3 py-2">
+            <div className="block w-full h-[40px] rounded-md border border-border bg-bg-hover text-text-muted text-[0.9375rem] px-3.5 py-2.5">
               {TIPOS.find((t) => t.value === form.tipo)?.label ?? form.tipo}
             </div>
           </div>

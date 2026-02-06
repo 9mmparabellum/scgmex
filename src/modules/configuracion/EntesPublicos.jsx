@@ -245,7 +245,7 @@ export default function EntesPublicos() {
       </div>
 
       {/* Data table */}
-      <div className="bg-bg-card rounded-xl border border-border p-5">
+      <div className="bg-white rounded-lg card-shadow p-5">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <svg
@@ -383,7 +383,7 @@ export default function EntesPublicos() {
               placeholder="Direccion completa del ente publico"
               value={form.domicilio}
               onChange={(e) => handleChange('domicilio', e.target.value)}
-              className="block w-full rounded-lg border border-border bg-bg-input text-text-primary text-sm px-3 py-2 placeholder:text-text-muted transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-bg-hover resize-none"
+              className="block w-full rounded-md border border-border bg-white text-text-heading text-[0.9375rem] px-3.5 py-2.5 placeholder:text-text-muted transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-guinda/25 focus:border-guinda disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-bg-hover resize-none"
             />
           </div>
 

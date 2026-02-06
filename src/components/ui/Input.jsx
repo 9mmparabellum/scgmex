@@ -4,18 +4,22 @@ export default forwardRef(function Input(
   { label, error, type = 'text', icon, className = '', id, ...props },
   ref
 ) {
-  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  const inputId =
+    id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label htmlFor={inputId} className="block text-[14px] font-medium text-[#333] mb-2">
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-text-heading mb-1.5"
+        >
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#bbb]">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
             {icon}
           </div>
         )}
@@ -24,16 +28,21 @@ export default forwardRef(function Input(
           id={inputId}
           type={type}
           className={[
-            'block w-full rounded-xl border bg-white text-[#333] text-[15px] px-4 py-3 placeholder:text-[#bbb] transition-all',
-            'focus:outline-none focus:ring-2 focus:ring-guinda/15 focus:border-guinda/40',
-            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-[#f5f5f5]',
-            icon ? 'pl-11' : '',
-            error ? 'border-danger focus:ring-danger/15 focus:border-danger' : 'border-[#e0e0e0]',
+            'block w-full h-[40px] rounded-md border bg-white text-text-heading text-[0.9375rem] px-3.5 py-2.5',
+            'placeholder:text-text-muted transition-all duration-150',
+            'focus:outline-none focus:ring-2 focus:border-guinda',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-bg-hover',
+            icon ? 'pl-10' : '',
+            error
+              ? 'border-danger focus:ring-danger/25 focus:border-danger'
+              : 'border-border focus:ring-guinda/25',
           ].join(' ')}
           {...props}
         />
       </div>
-      {error && <p className="mt-1.5 text-[13px] text-danger">{error}</p>}
+      {error && (
+        <p className="mt-1.5 text-[0.8125rem] text-danger">{error}</p>
+      )}
     </div>
   );
 });

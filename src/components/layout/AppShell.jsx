@@ -7,11 +7,20 @@ export default function AppShell() {
   const { sidebarOpen } = useAppStore();
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-bg-main">
+      {/* Sidebar stays mounted -- uses CSS transform to slide */}
       <Sidebar />
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-[280px]' : 'ml-0'}`}>
+
+      {/* Content wrapper -- margin syncs with sidebar animation */}
+      <div
+        className={`
+          min-h-screen flex flex-col
+          transition-[margin] duration-300 ease-in-out
+          ${sidebarOpen ? 'ml-[260px]' : 'ml-0'}
+        `}
+      >
         <Header />
-        <main className="p-8">
+        <main className="flex-1 p-6 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

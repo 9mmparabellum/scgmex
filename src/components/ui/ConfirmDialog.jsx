@@ -14,14 +14,14 @@ export default function ConfirmDialog({
 }) {
   return (
     <Modal open={open} onClose={onClose} title={title} size="sm">
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Icon */}
         <div className="flex justify-center">
           {variant === 'danger' ? (
-            <div className="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-[#ff3e1d]/10 flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-danger"
+                className="h-7 w-7 text-danger"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -33,10 +33,10 @@ export default function ConfirmDialog({
               </svg>
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-full bg-info/10 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-[#03c3ec]/10 flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-info"
+                className="h-7 w-7 text-info"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -52,11 +52,13 @@ export default function ConfirmDialog({
 
         {/* Message */}
         {message && (
-          <p className="text-sm text-text-secondary text-center">{message}</p>
+          <p className="text-[0.9375rem] text-text-secondary text-center leading-relaxed">
+            {message}
+          </p>
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-1 border-t border-border mt-5 pt-4">
           <Button variant="ghost" onClick={onClose} disabled={loading}>
             {cancelText}
           </Button>
