@@ -1,0 +1,1 @@
+import{u as o,w as i}from"./export-t5FFX7R_.js";function _(l,a,n){const w=[a.map(e=>e.label),...l.map(e=>a.map(t=>t.getValue?t.getValue(e):e[t.key]))],s=o.aoa_to_sheet(w);s["!cols"]=a.map(()=>({wch:20}));const p=o.book_new();o.book_append_sheet(p,s,"Datos"),i(p,`${n}.xlsx`)}export{_ as e};
