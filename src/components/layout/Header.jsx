@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuth } from '../../hooks/useAuth';
+import { usePolizasList } from '../../hooks/usePoliza';
 
 /* ------------------------------------------------------------------ */
 /*  Estado badge color map                                             */
@@ -26,13 +27,20 @@ export default function Header() {
   const { entePublico, ejercicioFiscal, toggleSidebar } = useAppStore();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef(null);
   const dropdownRef = useRef(null);
+  const { data: polizas = [] } = usePolizasList();
+  const pendientes = polizas.filter(p => p.estado === 'pendiente').length;
 
   /* Close dropdown on outside click */
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -90,14 +98,47 @@ export default function Header() {
       {/* ---- Right side ---- */}
       <div className="flex items-center gap-2">
         {/* Notification bell */}
-        <button className="relative p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-heading cursor-pointer">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          {/* Badge dot */}
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white" />
-        </button>
+        <div className="relative" ref={notifRef}>
+          <button
+            onClick={() => setNotifOpen(!notifOpen)}
+            className="relative p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-heading cursor-pointer"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {pendientes > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-white" />
+            )}
+          </button>
+
+          {notifOpen && (
+            <div
+              className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg py-1 z-50"
+              style={{ boxShadow: '0 4px 16px rgba(67,89,113,0.16)' }}
+            >
+              <div className="px-4 py-3 border-b border-border">
+                <div className="text-[0.8125rem] font-semibold text-text-heading">
+                  Notificaciones
+                </div>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {pendientes > 0 ? (
+                  <div className="px-4 py-3 flex items-start gap-3 hover:bg-bg-hover transition-colors">
+                    <div className="w-2 h-2 rounded-full mt-[7px] flex-shrink-0 bg-[#03c3ec]" />
+                    <p className="text-[0.8125rem] text-text-primary">
+                      {pendientes} poliza{pendientes > 1 ? 's' : ''} pendiente{pendientes > 1 ? 's' : ''} de aprobacion
+                    </p>
+                  </div>
+                ) : (
+                  <div className="px-4 py-6 text-center text-[0.8125rem] text-text-muted">
+                    Sin notificaciones
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Divider */}
         <div className="w-px h-8 bg-border mx-1" />

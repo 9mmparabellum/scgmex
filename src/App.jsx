@@ -4,7 +4,6 @@ import { ROUTES } from './config/routes';
 import AppShell from './components/layout/AppShell';
 import Login from './modules/auth/Login';
 import Dashboard from './modules/dashboard/Dashboard';
-import PlaceholderPage from './components/shared/PlaceholderPage';
 
 // M1: Configuracion
 import EntesPublicos from './modules/configuracion/EntesPublicos';

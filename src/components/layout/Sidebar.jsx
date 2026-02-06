@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../stores/appStore';
 import { ROUTES } from '../../config/routes';
+import { canAccess } from '../../utils/rbac';
 
 /* ------------------------------------------------------------------ */
 /*  Menu structure with section labels                                 */
@@ -23,11 +24,12 @@ const menuConfig = [
   },
 
   /* ---- CONTABILIDAD ---- */
-  { type: 'section', label: 'CONTABILIDAD' },
+  { type: 'section', label: 'CONTABILIDAD', modulo: 'contabilidad' },
   {
     type: 'item',
     label: 'Polizas',
     path: ROUTES.POLIZAS,
+    modulo: 'contabilidad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -42,6 +44,7 @@ const menuConfig = [
     type: 'item',
     label: 'Libro Diario',
     path: ROUTES.LIBRO_DIARIO,
+    modulo: 'contabilidad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
@@ -54,6 +57,7 @@ const menuConfig = [
     type: 'item',
     label: 'Libro Mayor',
     path: ROUTES.LIBRO_MAYOR,
+    modulo: 'contabilidad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
@@ -65,6 +69,7 @@ const menuConfig = [
     type: 'item',
     label: 'Balanza',
     path: ROUTES.BALANZA,
+    modulo: 'contabilidad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 3v18" />
@@ -78,11 +83,12 @@ const menuConfig = [
   },
 
   /* ---- PRESUPUESTO ---- */
-  { type: 'section', label: 'PRESUPUESTO' },
+  { type: 'section', label: 'PRESUPUESTO', modulo: 'presupuesto' },
   {
     type: 'item',
     label: 'Egresos',
     path: ROUTES.PRESUPUESTO_EGRESOS,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="1" x2="12" y2="23" />
@@ -94,6 +100,7 @@ const menuConfig = [
     type: 'item',
     label: 'Partidas',
     path: ROUTES.PARTIDAS,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
@@ -107,6 +114,7 @@ const menuConfig = [
     type: 'item',
     label: 'Momentos Gasto',
     path: ROUTES.MOMENTOS_GASTO,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -119,6 +127,7 @@ const menuConfig = [
     type: 'item',
     label: 'Ingresos',
     path: ROUTES.PRESUPUESTO_INGRESOS,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
@@ -130,6 +139,7 @@ const menuConfig = [
     type: 'item',
     label: 'Conceptos',
     path: ROUTES.CONCEPTOS_INGRESO,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -141,6 +151,7 @@ const menuConfig = [
     type: 'item',
     label: 'Momentos Ingreso',
     path: ROUTES.MOMENTOS_INGRESO,
+    modulo: 'presupuesto',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -149,11 +160,12 @@ const menuConfig = [
   },
 
   /* ---- PATRIMONIO ---- */
-  { type: 'section', label: 'PATRIMONIO' },
+  { type: 'section', label: 'PATRIMONIO', modulo: 'patrimonio' },
   {
     type: 'item',
     label: 'Bienes',
     path: ROUTES.BIENES,
+    modulo: 'patrimonio',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
@@ -164,6 +176,7 @@ const menuConfig = [
     type: 'item',
     label: 'Inventarios',
     path: ROUTES.INVENTARIOS,
+    modulo: 'patrimonio',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -176,6 +189,7 @@ const menuConfig = [
     type: 'item',
     label: 'Fideicomisos',
     path: ROUTES.FIDEICOMISOS,
+    modulo: 'patrimonio',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -184,11 +198,12 @@ const menuConfig = [
   },
 
   /* ---- CATALOGOS ---- */
-  { type: 'section', label: 'CATALOGOS' },
+  { type: 'section', label: 'CATALOGOS', modulo: 'catalogo' },
   {
     type: 'item',
     label: 'Plan de Cuentas',
     path: ROUTES.PLAN_CUENTAS,
+    modulo: 'catalogo',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
@@ -201,6 +216,7 @@ const menuConfig = [
     type: 'item',
     label: 'Clasificadores',
     path: ROUTES.CLASIFICADORES,
+    modulo: 'catalogo',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6" />
@@ -216,6 +232,7 @@ const menuConfig = [
     type: 'item',
     label: 'Matrices',
     path: ROUTES.MATRICES,
+    modulo: 'catalogo',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -233,6 +250,7 @@ const menuConfig = [
     type: 'item',
     label: 'Reportes',
     path: ROUTES.REPORTES,
+    modulo: 'reportes',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -245,6 +263,7 @@ const menuConfig = [
     type: 'item',
     label: 'Deuda Publica',
     path: ROUTES.DEUDA,
+    modulo: 'deuda',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="6" width="20" height="12" rx="2" />
@@ -257,6 +276,7 @@ const menuConfig = [
     type: 'item',
     label: 'Transparencia',
     path: ROUTES.TRANSPARENCIA,
+    modulo: 'transparencia',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" />
@@ -268,6 +288,7 @@ const menuConfig = [
     type: 'item',
     label: 'Cuenta Publica',
     path: ROUTES.CUENTA_PUBLICA,
+    modulo: 'cuenta_publica',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -280,6 +301,7 @@ const menuConfig = [
     type: 'item',
     label: 'Fondos Federales',
     path: ROUTES.FONDOS_FEDERALES,
+    modulo: 'fondos',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="3" width="20" height="14" rx="2" />
@@ -290,11 +312,12 @@ const menuConfig = [
   },
 
   /* ---- SISTEMA ---- */
-  { type: 'section', label: 'SISTEMA' },
+  { type: 'section', label: 'SISTEMA', modulo: 'seguridad' },
   {
     type: 'item',
     label: 'Entes Publicos',
     path: ROUTES.ENTES,
+    modulo: 'seguridad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -308,6 +331,7 @@ const menuConfig = [
     type: 'item',
     label: 'Ejercicios',
     path: ROUTES.EJERCICIOS,
+    modulo: 'seguridad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -321,6 +345,7 @@ const menuConfig = [
     type: 'item',
     label: 'Periodos',
     path: ROUTES.PERIODOS,
+    modulo: 'seguridad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -332,6 +357,7 @@ const menuConfig = [
     type: 'item',
     label: 'Usuarios',
     path: ROUTES.USUARIOS,
+    modulo: 'seguridad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -343,6 +369,7 @@ const menuConfig = [
     type: 'item',
     label: 'Bitacora',
     path: ROUTES.BITACORA,
+    modulo: 'seguridad',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -403,7 +430,7 @@ function SectionLabel({ label }) {
 /* ------------------------------------------------------------------ */
 
 export default function Sidebar() {
-  const { sidebarOpen } = useAppStore();
+  const { sidebarOpen, rol } = useAppStore();
 
   return (
     <aside
@@ -438,7 +465,9 @@ export default function Sidebar() {
 
       {/* ---- Navigation ---- */}
       <nav className="flex-1 overflow-y-auto py-4 space-y-[2px]">
-        {menuConfig.map((entry, i) => {
+        {menuConfig
+          .filter(entry => !entry.modulo || canAccess(rol, entry.modulo))
+          .map((entry, i) => {
           if (entry.type === 'section') {
             return <SectionLabel key={`section-${i}`} label={entry.label} />;
           }
