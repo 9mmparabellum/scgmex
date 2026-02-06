@@ -23,6 +23,16 @@ import LibroDiario from './modules/contabilidad/LibroDiario';
 import LibroMayor from './modules/contabilidad/LibroMayor';
 import BalanzaComprobacion from './modules/contabilidad/BalanzaComprobacion';
 
+// M4: Presupuesto Egresos
+import PresupuestoEgresos from './modules/presupuesto-egresos/PresupuestoEgresos';
+import PartidasPresupuestales from './modules/presupuesto-egresos/PartidasPresupuestales';
+import MomentosGasto from './modules/presupuesto-egresos/MomentosGasto';
+
+// M5: Presupuesto Ingresos
+import PresupuestoIngresos from './modules/presupuesto-ingresos/PresupuestoIngresos';
+import ConceptosIngreso from './modules/presupuesto-ingresos/ConceptosIngreso';
+import MomentosIngreso from './modules/presupuesto-ingresos/MomentosIngreso';
+
 // M12: Seguridad
 import Bitacora from './modules/seguridad/Bitacora';
 import Usuarios from './modules/seguridad/Usuarios';
@@ -65,14 +75,14 @@ export default function App() {
         <Route path={ROUTES.BALANZA} element={<BalanzaComprobacion />} />
 
         {/* M4: Presupuesto Egresos */}
-        <Route path={ROUTES.PRESUPUESTO_EGRESOS} element={<PlaceholderPage title="Presupuesto de Egresos" modulo="M4" />} />
-        <Route path={ROUTES.PARTIDAS} element={<PlaceholderPage title="Partidas Presupuestales" modulo="M4" />} />
-        <Route path={ROUTES.MOMENTOS_GASTO} element={<PlaceholderPage title="Momentos del Gasto" modulo="M4" />} />
+        <Route path={ROUTES.PRESUPUESTO_EGRESOS} element={<PresupuestoEgresos />} />
+        <Route path={ROUTES.PARTIDAS} element={<PartidasPresupuestales />} />
+        <Route path={ROUTES.MOMENTOS_GASTO} element={<MomentosGasto />} />
 
         {/* M5: Presupuesto Ingresos */}
-        <Route path={ROUTES.PRESUPUESTO_INGRESOS} element={<PlaceholderPage title="Presupuesto de Ingresos" modulo="M5" />} />
-        <Route path={ROUTES.CONCEPTOS_INGRESO} element={<PlaceholderPage title="Conceptos de Ingreso" modulo="M5" />} />
-        <Route path={ROUTES.MOMENTOS_INGRESO} element={<PlaceholderPage title="Momentos del Ingreso" modulo="M5" />} />
+        <Route path={ROUTES.PRESUPUESTO_INGRESOS} element={<PresupuestoIngresos />} />
+        <Route path={ROUTES.CONCEPTOS_INGRESO} element={<ConceptosIngreso />} />
+        <Route path={ROUTES.MOMENTOS_INGRESO} element={<MomentosIngreso />} />
 
         {/* M6: Patrimonio */}
         <Route path={ROUTES.BIENES} element={<PlaceholderPage title="Bienes" modulo="M6" />} />

@@ -852,3 +852,113 @@ CREATE OR REPLACE TRIGGER trg_audit_movimiento_contable
 CREATE OR REPLACE TRIGGER trg_audit_saldo_cuenta
   AFTER INSERT OR UPDATE OR DELETE ON saldo_cuenta
   FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- =============================================================================
+-- FASE 3: Presupuesto de Egresos (M4) e Ingresos (M5)
+-- Tablas: partida_egreso, movimiento_presupuestal_egreso, concepto_ingreso, movimiento_presupuestal_ingreso
+-- =============================================================================
+
+-- ---------------------------------------------
+-- 3.1 Partida de Egreso
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS partida_egreso (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clasificador_id UUID NOT NULL REFERENCES clasificador_presupuestal(id),
+  fuente_id UUID REFERENCES clasificador_presupuestal(id),
+  clave VARCHAR(30) NOT NULL,
+  descripcion VARCHAR(500) NOT NULL,
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, clave)
+);
+
+-- ---------------------------------------------
+-- 3.2 Movimiento Presupuestal de Egreso
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS movimiento_presupuestal_egreso (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  partida_id UUID NOT NULL REFERENCES partida_egreso(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id),
+  momento VARCHAR(20) NOT NULL CHECK (momento IN ('aprobado','modificado','comprometido','devengado','ejercido','pagado')),
+  tipo_movimiento VARCHAR(20) NOT NULL DEFAULT 'original' CHECK (tipo_movimiento IN ('original','adicion','reduccion')),
+  monto NUMERIC(18,2) NOT NULL CHECK (monto >= 0),
+  descripcion VARCHAR(500),
+  fecha DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- 3.3 Concepto de Ingreso
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS concepto_ingreso (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clasificador_id UUID NOT NULL REFERENCES clasificador_presupuestal(id),
+  clave VARCHAR(30) NOT NULL,
+  descripcion VARCHAR(500) NOT NULL,
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, clave)
+);
+
+-- ---------------------------------------------
+-- 3.4 Movimiento Presupuestal de Ingreso
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS movimiento_presupuestal_ingreso (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  concepto_id UUID NOT NULL REFERENCES concepto_ingreso(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id),
+  momento VARCHAR(20) NOT NULL CHECK (momento IN ('estimado','modificado','devengado','recaudado')),
+  tipo_movimiento VARCHAR(20) NOT NULL DEFAULT 'original' CHECK (tipo_movimiento IN ('original','adicion','reduccion')),
+  monto NUMERIC(18,2) NOT NULL CHECK (monto >= 0),
+  descripcion VARCHAR(500),
+  fecha DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- 3.5 Indices
+-- ---------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_partida_egreso_ente_ejercicio ON partida_egreso(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_partida_egreso_clasificador ON partida_egreso(clasificador_id);
+CREATE INDEX IF NOT EXISTS idx_mov_egreso_partida ON movimiento_presupuestal_egreso(partida_id);
+CREATE INDEX IF NOT EXISTS idx_mov_egreso_periodo ON movimiento_presupuestal_egreso(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_concepto_ingreso_ente_ejercicio ON concepto_ingreso(ente_id, ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_concepto_ingreso_clasificador ON concepto_ingreso(clasificador_id);
+CREATE INDEX IF NOT EXISTS idx_mov_ingreso_concepto ON movimiento_presupuestal_ingreso(concepto_id);
+CREATE INDEX IF NOT EXISTS idx_mov_ingreso_periodo ON movimiento_presupuestal_ingreso(periodo_id);
+
+-- ---------------------------------------------
+-- 3.6 Triggers
+-- ---------------------------------------------
+
+-- updated_at para partida_egreso y concepto_ingreso
+CREATE OR REPLACE TRIGGER trg_partida_egreso_updated_at
+  BEFORE UPDATE ON partida_egreso
+  FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE OR REPLACE TRIGGER trg_concepto_ingreso_updated_at
+  BEFORE UPDATE ON concepto_ingreso
+  FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+-- Auditoria para las 4 tablas de Fase 3
+CREATE OR REPLACE TRIGGER trg_audit_partida_egreso
+  AFTER INSERT OR UPDATE OR DELETE ON partida_egreso
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE OR REPLACE TRIGGER trg_audit_movimiento_presupuestal_egreso
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_presupuestal_egreso
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE OR REPLACE TRIGGER trg_audit_concepto_ingreso
+  AFTER INSERT OR UPDATE OR DELETE ON concepto_ingreso
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE OR REPLACE TRIGGER trg_audit_movimiento_presupuestal_ingreso
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_presupuestal_ingreso
+  FOR EACH ROW EXECUTE FUNCTION fn_audit_log();

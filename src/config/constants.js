@@ -58,6 +58,12 @@ export const ESTADOS_POLIZA = {
   cancelada: { label: 'Cancelada', color: 'danger' },
 };
 
+export const TIPOS_MOVIMIENTO_PRESUPUESTAL = [
+  { key: 'original', label: 'Original' },
+  { key: 'adicion', label: 'Adicion' },
+  { key: 'reduccion', label: 'Reduccion' },
+];
+
 export const CLASIFICADORES = {
   administrativo: 'Administrativo',
   economico: 'Economico',
