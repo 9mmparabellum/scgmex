@@ -30,44 +30,39 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-[#0a0a0a]">
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-[#080808]">
       {/* Abstract background */}
       <div className="absolute inset-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-guinda/20 blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-guinda-dark/30 blur-[120px]" />
-        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-dorado/8 blur-[100px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-guinda/20 blur-[140px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-guinda-dark/30 blur-[140px]" />
+        <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-dorado/8 blur-[120px]" />
       </div>
 
-      {/* Noise texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-      }} />
-
       {/* Card */}
-      <div className="relative w-full max-w-[420px]">
-        <div className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-10 shadow-2xl">
+      <div className="relative w-full max-w-[480px]">
+        <div className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-12 shadow-2xl">
           {/* Logo */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-10">
             <div className="relative">
-              <div className="w-14 h-14 bg-gradient-to-br from-guinda to-guinda-dark rounded-xl flex items-center justify-center shadow-lg shadow-guinda/20">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-16 h-16 bg-gradient-to-br from-guinda to-guinda-dark rounded-2xl flex items-center justify-center shadow-lg shadow-guinda/20">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
                 </svg>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-dorado rounded-full border-2 border-[#0a0a0a]" />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-dorado rounded-full border-[3px] border-[#080808]" />
             </div>
           </div>
 
           {/* Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white tracking-wide">SCGMEX</h1>
-            <p className="text-white/30 text-sm mt-1.5">Contabilidad Gubernamental</p>
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-white tracking-wide">SCGMEX</h1>
+            <p className="text-white/30 text-base mt-2">Contabilidad Gubernamental</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm text-center">
+              <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm text-center">
                 {error}
               </div>
             )}
@@ -77,7 +72,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/[0.06] border border-white/[0.08] rounded-lg text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
+                className="w-full px-5 py-4 bg-white/[0.06] border border-white/[0.08] rounded-xl text-white text-base placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
                 placeholder="Correo electronico"
                 required
               />
@@ -88,7 +83,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/[0.06] border border-white/[0.08] rounded-lg text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
+                className="w-full px-5 py-4 bg-white/[0.06] border border-white/[0.08] rounded-xl text-white text-base placeholder:text-white/25 focus:outline-none focus:border-guinda/60 focus:bg-white/[0.08] transition-all"
                 placeholder="Contrasena"
                 required
               />
@@ -97,11 +92,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-guinda text-white font-medium rounded-lg hover:bg-guinda-light active:scale-[0.98] transition-all disabled:opacity-50 text-sm mt-2 cursor-pointer"
+              className="w-full py-4 bg-guinda text-white font-semibold rounded-xl hover:bg-guinda-light active:scale-[0.98] transition-all disabled:opacity-50 text-base mt-1 cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -112,16 +107,16 @@ export default function Login() {
           </form>
 
           {/* Demo hint */}
-          <p className="text-white/20 text-xs text-center mt-6">
+          <p className="text-white/20 text-sm text-center mt-8">
             Demo — cualquier credencial es valida
           </p>
         </div>
 
         {/* Bottom subtle branding */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <div className="w-1 h-1 rounded-full bg-dorado/40" />
-          <span className="text-white/15 text-[11px] tracking-wider uppercase">Gobierno de Mexico</span>
-          <div className="w-1 h-1 rounded-full bg-dorado/40" />
+        <div className="flex items-center justify-center gap-2.5 mt-8">
+          <div className="w-1.5 h-1.5 rounded-full bg-dorado/40" />
+          <span className="text-white/15 text-xs tracking-widest uppercase">Gobierno de Mexico</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-dorado/40" />
         </div>
       </div>
     </div>

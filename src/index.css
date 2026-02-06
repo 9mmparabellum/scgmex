@@ -50,10 +50,13 @@
 }
 
 body {
-  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--color-bg-main);
   color: var(--color-text-primary);
   min-height: 100vh;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {

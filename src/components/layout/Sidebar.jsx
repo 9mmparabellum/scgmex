@@ -8,7 +8,7 @@ const menuItems = [
     label: 'Dashboard',
     path: ROUTES.DASHBOARD,
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
     ),
@@ -16,7 +16,7 @@ const menuItems = [
   {
     label: 'Contabilidad',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /><path d="M8 7h6M8 11h4" />
       </svg>
     ),
@@ -30,7 +30,7 @@ const menuItems = [
   {
     label: 'Presupuesto',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
       </svg>
     ),
@@ -42,7 +42,7 @@ const menuItems = [
   {
     label: 'Patrimonio',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
       </svg>
     ),
@@ -55,7 +55,7 @@ const menuItems = [
   {
     label: 'Catalogos',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 12h6M9 16h4" />
       </svg>
     ),
@@ -69,7 +69,7 @@ const menuItems = [
     label: 'Reportes',
     path: ROUTES.REPORTES,
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
       </svg>
     ),
@@ -78,7 +78,7 @@ const menuItems = [
     label: 'Deuda Publica',
     path: ROUTES.DEUDA,
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="6" width="20" height="12" rx="2" /><path d="M12 12a2 2 0 1 0 0-0.01" /><path d="M6 12h.01M18 12h.01" />
       </svg>
     ),
@@ -87,7 +87,7 @@ const menuItems = [
     label: 'Transparencia',
     path: ROUTES.TRANSPARENCIA,
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
     ),
@@ -95,7 +95,7 @@ const menuItems = [
   {
     label: 'Configuracion',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
     ),
@@ -117,7 +117,7 @@ function MenuItem({ item }) {
       <div>
         <button
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between px-3 py-2 text-[13px] text-white/50 hover:text-white/80 hover:bg-white/[0.04] rounded-lg mx-2 transition-all cursor-pointer"
+          className="w-full flex items-center justify-between px-4 py-2.5 text-[15px] text-white/50 hover:text-white/80 hover:bg-white/[0.04] rounded-xl mx-2 transition-all cursor-pointer"
           style={{ width: 'calc(100% - 16px)' }}
         >
           <span className="flex items-center gap-3">
@@ -125,20 +125,20 @@ function MenuItem({ item }) {
             <span>{item.label}</span>
           </span>
           <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
             className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           >
             <polyline points="6,9 12,15 18,9" />
           </svg>
         </button>
         <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="ml-5 pl-4 border-l border-white/[0.06] mt-1 mb-1 space-y-0.5">
+          <div className="ml-6 pl-5 border-l border-white/[0.06] mt-1 mb-2 space-y-0.5">
             {item.children.map((child) => (
               <NavLink
                 key={child.path}
                 to={child.path}
                 className={({ isActive }) =>
-                  `block px-3 py-1.5 text-[13px] rounded-md transition-all ${
+                  `block px-4 py-2 text-[14px] rounded-lg transition-all ${
                     isActive
                       ? 'text-white bg-guinda/80'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
@@ -158,7 +158,7 @@ function MenuItem({ item }) {
     <NavLink
       to={item.path}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2 text-[13px] rounded-lg mx-2 transition-all ${
+        `flex items-center gap-3 px-4 py-2.5 text-[15px] rounded-xl mx-2 transition-all ${
           isActive
             ? 'text-white bg-guinda/80'
             : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'
@@ -177,30 +177,30 @@ export default function Sidebar() {
   if (!sidebarOpen) return null;
 
   return (
-    <aside className="w-[260px] bg-[#0c0c0c] min-h-screen flex flex-col fixed left-0 top-0 z-40 border-r border-white/[0.06]">
+    <aside className="w-[280px] bg-[#0c0c0c] min-h-screen flex flex-col fixed left-0 top-0 z-40 border-r border-white/[0.06]">
       {/* Logo */}
-      <div className="px-5 py-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-guinda to-guinda-dark rounded-lg flex items-center justify-center shadow-lg shadow-guinda/10">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <div className="px-6 py-6 flex items-center gap-3.5">
+        <div className="w-10 h-10 bg-gradient-to-br from-guinda to-guinda-dark rounded-xl flex items-center justify-center shadow-lg shadow-guinda/10">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11" />
           </svg>
         </div>
         <div>
-          <div className="text-white font-semibold text-sm tracking-wide">SCGMEX</div>
-          <div className="text-white/25 text-[10px]">Contabilidad Gubernamental</div>
+          <div className="text-white font-bold text-base tracking-wide">SCGMEX</div>
+          <div className="text-white/25 text-xs">Contabilidad Gubernamental</div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-2 space-y-0.5 overflow-y-auto px-1">
+      <nav className="flex-1 py-2 space-y-1 overflow-y-auto px-1">
         {menuItems.map((item, i) => (
           <MenuItem key={i} item={item} />
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
-        <div className="text-[10px] text-white/20 text-center">
+      <div className="px-6 py-5 border-t border-white/[0.06]">
+        <div className="text-xs text-white/20 text-center">
           Gobierno de Mexico
         </div>
       </div>

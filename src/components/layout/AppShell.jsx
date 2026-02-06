@@ -9,9 +9,9 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-[#fafafa]">
       <Sidebar />
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-[260px]' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-[280px]' : 'ml-0'}`}>
         <Header />
-        <main className="p-6">
+        <main className="p-8">
           <Outlet />
         </main>
       </div>

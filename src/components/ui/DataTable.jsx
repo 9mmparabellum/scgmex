@@ -61,35 +61,35 @@ export default function DataTable({
   return (
     <div className="w-full">
       {searchable && (
-        <div className="mb-4">
+        <div className="mb-5">
           <input
             type="text"
             placeholder="Buscar..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full max-w-xs px-3 py-2 bg-white border border-[#e0e0e0] rounded-lg text-sm text-[#333] placeholder:text-[#bbb] focus:outline-none focus:border-guinda/40 focus:ring-1 focus:ring-guinda/10 transition-all"
+            className="w-full max-w-sm px-4 py-3 bg-white border border-[#e0e0e0] rounded-xl text-[15px] text-[#333] placeholder:text-[#bbb] focus:outline-none focus:border-guinda/40 focus:ring-2 focus:ring-guinda/10 transition-all"
           />
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-[#eee] overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-2xl border border-[#eee] overflow-hidden">
+        <table className="w-full">
           <thead>
             <tr className="border-b border-[#f0f0f0]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={[
-                    'text-left text-[11px] font-medium text-[#aaa] uppercase tracking-wider px-5 py-3',
+                    'text-left text-xs font-semibold text-[#aaa] uppercase tracking-wider px-6 py-4',
                     col.sortable !== false ? 'cursor-pointer select-none hover:text-[#666]' : '',
                   ].join(' ')}
                   style={col.width ? { width: col.width } : undefined}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                 >
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5">
                     {col.label}
                     {col.sortable !== false && sortKey === col.key && (
-                      <svg className="w-3 h-3 text-guinda" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-3.5 h-3.5 text-guinda" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         {sortDir === 'asc' ? <path d="M5 15l7-7 7 7" /> : <path d="M19 9l-7 7-7-7" />}
                       </svg>
                     )}
@@ -101,8 +101,8 @@ export default function DataTable({
           <tbody>
             {pagedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-12 text-[#bbb]">
-                  <p className="text-sm">Sin resultados</p>
+                <td colSpan={columns.length} className="text-center py-16 text-[#bbb]">
+                  <p className="text-[15px]">Sin resultados</p>
                 </td>
               </tr>
             ) : (
@@ -116,7 +116,7 @@ export default function DataTable({
                   ].join(' ')}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-5 py-3 text-[#333]">
+                    <td key={col.key} className="px-6 py-4 text-[14px] text-[#333]">
                       {col.render
                         ? col.render(row[col.key], row)
                         : (row[col.key] ?? '—')}
@@ -130,25 +130,25 @@ export default function DataTable({
       </div>
 
       {sortedData.length > pageSize && (
-        <div className="flex items-center justify-between mt-4 text-sm">
-          <span className="text-xs text-[#aaa]">
+        <div className="flex items-center justify-between mt-5">
+          <span className="text-[13px] text-[#aaa]">
             {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, sortedData.length)} de {sortedData.length}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={safePage === 0}
-              className="px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-xs text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-[#e0e0e0] text-[13px] font-medium text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Anterior
             </button>
-            <span className="px-3 py-1.5 text-xs text-[#aaa]">
+            <span className="px-3 py-2 text-[13px] text-[#aaa]">
               {safePage + 1}/{totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={safePage >= totalPages - 1}
-              className="px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-xs text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-[#e0e0e0] text-[13px] font-medium text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Siguiente
             </button>
