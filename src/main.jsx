@@ -4,10 +4,6 @@ import { HashRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App.jsx';
-import { initSeedData } from './services/seedData';
-
-// Initialize demo seed data (localStorage) on first load
-initSeedData();
 
 const queryClient = new QueryClient({
   defaultOptions: {

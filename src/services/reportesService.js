@@ -1,5 +1,4 @@
 import { supabase } from '../config/supabase';
-import { fetchAll } from './dataService';
 
 // ── Tipos de cuenta → secciones ─────────────────────────────────────
 const TIPOS_ACTIVO = ['activo'];
@@ -46,39 +45,23 @@ function attachFullSaldos(cuentas, saldoMap) {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// Estado de Situación Financiera (Balance Sheet)
+// Estado de Situacion Financiera (Balance Sheet)
 // ═════════════════════════════════════════════════════════════════════
 
 export async function fetchEstadoSituacionFinanciera(enteId, ejercicioId, periodoId) {
-  if (supabase) {
-    const { data: cuentas, error: cError } = await supabase
-      .from('plan_de_cuentas')
-      .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
-      .eq('ente_id', enteId);
-    if (cError) throw cError;
+  const { data: cuentas, error: cError } = await supabase
+    .from('plan_de_cuentas')
+    .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
+    .eq('ente_id', enteId);
+  if (cError) throw cError;
 
-    const { data: saldos, error: sError } = await supabase
-      .from('saldo_cuenta')
-      .select('cuenta_id, saldo_final')
-      .eq('periodo_id', periodoId);
-    if (sError) throw sError;
+  const { data: saldos, error: sError } = await supabase
+    .from('saldo_cuenta')
+    .select('cuenta_id, saldo_final')
+    .eq('periodo_id', periodoId);
+  if (sError) throw sError;
 
-    const saldoMap = buildSaldoMap(saldos);
-    return {
-      activo: groupCuentasByTipo(cuentas, saldoMap, TIPOS_ACTIVO),
-      pasivo: groupCuentasByTipo(cuentas, saldoMap, TIPOS_PASIVO),
-      hacienda: groupCuentasByTipo(cuentas, saldoMap, TIPOS_HACIENDA),
-    };
-  }
-
-  // localStorage fallback
-  const cuentas = await fetchAll('plan_de_cuentas', {
-    filter: { ente_id: enteId },
-  });
-  const allSaldos = await fetchAll('saldo_cuenta');
-  const saldos = allSaldos.filter((s) => s.periodo_id === periodoId);
   const saldoMap = buildSaldoMap(saldos);
-
   return {
     activo: groupCuentasByTipo(cuentas, saldoMap, TIPOS_ACTIVO),
     pasivo: groupCuentasByTipo(cuentas, saldoMap, TIPOS_PASIVO),
@@ -91,38 +74,19 @@ export async function fetchEstadoSituacionFinanciera(enteId, ejercicioId, period
 // ═════════════════════════════════════════════════════════════════════
 
 export async function fetchEstadoActividades(enteId, ejercicioId, periodoId) {
-  if (supabase) {
-    const { data: cuentas, error: cError } = await supabase
-      .from('plan_de_cuentas')
-      .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
-      .eq('ente_id', enteId);
-    if (cError) throw cError;
+  const { data: cuentas, error: cError } = await supabase
+    .from('plan_de_cuentas')
+    .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
+    .eq('ente_id', enteId);
+  if (cError) throw cError;
 
-    const { data: saldos, error: sError } = await supabase
-      .from('saldo_cuenta')
-      .select('cuenta_id, saldo_final')
-      .eq('periodo_id', periodoId);
-    if (sError) throw sError;
+  const { data: saldos, error: sError } = await supabase
+    .from('saldo_cuenta')
+    .select('cuenta_id, saldo_final')
+    .eq('periodo_id', periodoId);
+  if (sError) throw sError;
 
-    const saldoMap = buildSaldoMap(saldos);
-    const ingresos = groupCuentasByTipo(cuentas, saldoMap, TIPOS_INGRESOS);
-    const gastos = groupCuentasByTipo(cuentas, saldoMap, TIPOS_GASTOS);
-
-    return {
-      ingresos,
-      gastos,
-      resultado: ingresos.total - gastos.total,
-    };
-  }
-
-  // localStorage fallback
-  const cuentas = await fetchAll('plan_de_cuentas', {
-    filter: { ente_id: enteId },
-  });
-  const allSaldos = await fetchAll('saldo_cuenta');
-  const saldos = allSaldos.filter((s) => s.periodo_id === periodoId);
   const saldoMap = buildSaldoMap(saldos);
-
   const ingresos = groupCuentasByTipo(cuentas, saldoMap, TIPOS_INGRESOS);
   const gastos = groupCuentasByTipo(cuentas, saldoMap, TIPOS_GASTOS);
 
@@ -134,41 +98,26 @@ export async function fetchEstadoActividades(enteId, ejercicioId, periodoId) {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// Estado de Variación en la Hacienda Pública
+// Estado de Variacion en la Hacienda Publica
 // ═════════════════════════════════════════════════════════════════════
 
 export async function fetchEstadoVariacionHacienda(enteId, ejercicioId, periodoId) {
-  if (supabase) {
-    const { data: cuentas, error: cError } = await supabase
-      .from('plan_de_cuentas')
-      .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
-      .eq('ente_id', enteId)
-      .in('tipo_cuenta', TIPOS_HACIENDA);
-    if (cError) throw cError;
+  const { data: cuentas, error: cError } = await supabase
+    .from('plan_de_cuentas')
+    .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
+    .eq('ente_id', enteId)
+    .in('tipo_cuenta', TIPOS_HACIENDA);
+  if (cError) throw cError;
 
-    const cuentaIds = cuentas.map((c) => c.id);
-    const { data: saldos, error: sError } = await supabase
-      .from('saldo_cuenta')
-      .select('cuenta_id, saldo_final')
-      .eq('periodo_id', periodoId)
-      .in('cuenta_id', cuentaIds);
-    if (sError) throw sError;
+  const cuentaIds = cuentas.map((c) => c.id);
+  const { data: saldos, error: sError } = await supabase
+    .from('saldo_cuenta')
+    .select('cuenta_id, saldo_final')
+    .eq('periodo_id', periodoId)
+    .in('cuenta_id', cuentaIds);
+  if (sError) throw sError;
 
-    const saldoMap = buildSaldoMap(saldos);
-    return buildVariacionGroups(cuentas, saldoMap);
-  }
-
-  // localStorage fallback
-  const allCuentas = await fetchAll('plan_de_cuentas', {
-    filter: { ente_id: enteId },
-  });
-  const cuentas = allCuentas.filter((c) => TIPOS_HACIENDA.includes(c.tipo_cuenta));
-
-  const cuentaIds = new Set(cuentas.map((c) => c.id));
-  const allSaldos = await fetchAll('saldo_cuenta');
-  const saldos = allSaldos.filter((s) => s.periodo_id === periodoId && cuentaIds.has(s.cuenta_id));
   const saldoMap = buildSaldoMap(saldos);
-
   return buildVariacionGroups(cuentas, saldoMap);
 }
 
@@ -200,40 +149,25 @@ function buildVariacionGroups(cuentas, saldoMap) {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// Estado Analítico del Activo
+// Estado Analitico del Activo
 // ═════════════════════════════════════════════════════════════════════
 
 export async function fetchEstadoAnaliticoActivo(enteId, ejercicioId, periodoId) {
-  if (supabase) {
-    const { data: cuentas, error: cError } = await supabase
-      .from('plan_de_cuentas')
-      .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
-      .eq('ente_id', enteId)
-      .eq('tipo_cuenta', 'activo');
-    if (cError) throw cError;
+  const { data: cuentas, error: cError } = await supabase
+    .from('plan_de_cuentas')
+    .select('id, codigo, nombre, tipo_cuenta, naturaleza, nivel')
+    .eq('ente_id', enteId)
+    .eq('tipo_cuenta', 'activo');
+  if (cError) throw cError;
 
-    const cuentaIds = cuentas.map((c) => c.id);
-    const { data: saldos, error: sError } = await supabase
-      .from('saldo_cuenta')
-      .select('cuenta_id, saldo_inicial, total_debe, total_haber, saldo_final')
-      .eq('periodo_id', periodoId)
-      .in('cuenta_id', cuentaIds);
-    if (sError) throw sError;
+  const cuentaIds = cuentas.map((c) => c.id);
+  const { data: saldos, error: sError } = await supabase
+    .from('saldo_cuenta')
+    .select('cuenta_id, saldo_inicial, total_debe, total_haber, saldo_final')
+    .eq('periodo_id', periodoId)
+    .in('cuenta_id', cuentaIds);
+  if (sError) throw sError;
 
-    const saldoMap = buildSaldoMap(saldos);
-    return attachFullSaldos(cuentas, saldoMap);
-  }
-
-  // localStorage fallback
-  const allCuentas = await fetchAll('plan_de_cuentas', {
-    filter: { ente_id: enteId },
-  });
-  const cuentas = allCuentas.filter((c) => c.tipo_cuenta === 'activo');
-
-  const cuentaIds = new Set(cuentas.map((c) => c.id));
-  const allSaldos = await fetchAll('saldo_cuenta');
-  const saldos = allSaldos.filter((s) => s.periodo_id === periodoId && cuentaIds.has(s.cuenta_id));
   const saldoMap = buildSaldoMap(saldos);
-
   return attachFullSaldos(cuentas, saldoMap);
 }

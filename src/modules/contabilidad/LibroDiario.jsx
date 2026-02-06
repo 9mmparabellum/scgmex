@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import { exportToExcel } from '../../utils/exportHelpers';
+import { exportToPdf } from '../../utils/exportPdfHelpers';
 import { useLibroDiario } from '../../hooks/usePoliza';
 import { TIPOS_POLIZA } from '../../config/constants';
 import { formatNumeroPoliza } from '../../utils/polizaHelpers';
@@ -57,6 +58,34 @@ export default function LibroDiario() {
     exportToExcel(rows, columns, 'libro_diario');
   };
 
+  const handleExportPdf = () => {
+    const rows = [];
+    polizas.forEach((p) => {
+      (p.movimiento_contable || p.movimientos || []).forEach((m) => {
+        rows.push({
+          poliza: formatNumeroPoliza(p.tipo, p.numero_poliza),
+          fecha: p.fecha,
+          tipo: TIPOS_POLIZA[p.tipo] || p.tipo,
+          cuenta: m.plan_de_cuentas?.codigo || '',
+          nombre_cuenta: m.plan_de_cuentas?.nombre || '',
+          concepto: m.concepto || '',
+          debe: m.debe || 0,
+          haber: m.haber || 0,
+        });
+      });
+    });
+    exportToPdf(rows, [
+      { key: 'poliza', label: 'Poliza' },
+      { key: 'fecha', label: 'Fecha' },
+      { key: 'tipo', label: 'Tipo' },
+      { key: 'cuenta', label: 'Cuenta' },
+      { key: 'nombre_cuenta', label: 'Nombre Cuenta' },
+      { key: 'concepto', label: 'Concepto' },
+      { key: 'debe', label: 'Debe' },
+      { key: 'haber', label: 'Haber' },
+    ], 'libro_diario', { title: 'Libro Diario' });
+  };
+
   return (
     <div>
       {/* Page header */}
@@ -84,6 +113,12 @@ export default function LibroDiario() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Exportar XLSX
+            </Button>
+            <Button variant="ghost" onClick={handleExportPdf} disabled={!polizas?.length}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Exportar PDF
             </Button>
           </div>
         </div>

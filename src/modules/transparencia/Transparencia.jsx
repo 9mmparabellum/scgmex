@@ -12,6 +12,7 @@ import { useResumenFondos } from '../../hooks/useFondosFederales';
 import { useSaldosCuenta } from '../../hooks/usePoliza';
 import Button from '../../components/ui/Button';
 import { exportToExcel } from '../../utils/exportHelpers';
+import { exportToPdf } from '../../utils/exportPdfHelpers';
 
 const reports = [
   {

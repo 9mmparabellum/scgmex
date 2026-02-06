@@ -1,5 +1,4 @@
 import { supabase } from '../config/supabase';
-import { fetchAll } from './dataService';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -30,45 +29,23 @@ function aggregateMovimientosPorInstrumento(movimientos) {
 // INSTRUMENTOS DE DEUDA
 // ═════════════════════════════════════════════════════════════════════
 
-/**
- * Fetch instrumentos de deuda with aggregated movimiento totals.
- */
 export async function fetchInstrumentosConSaldo(enteId, ejercicioId) {
-  if (supabase) {
-    const { data: instrumentos, error: iError } = await supabase
-      .from('instrumento_deuda')
-      .select('*')
-      .eq('ente_id', enteId)
-      .eq('ejercicio_id', ejercicioId)
-      .order('clave');
-    if (iError) throw iError;
-    if (!instrumentos.length) return [];
-
-    const instrumentoIds = instrumentos.map((i) => i.id);
-    const { data: movimientos, error: mError } = await supabase
-      .from('movimiento_deuda')
-      .select('*')
-      .in('instrumento_id', instrumentoIds);
-    if (mError) throw mError;
-
-    const totalesMap = aggregateMovimientosPorInstrumento(movimientos);
-
-    return instrumentos.map((i) => ({
-      ...i,
-      movimientos_totales: totalesMap[i.id] || emptyMovimientosTotales(),
-    }));
-  }
-
-  // localStorage fallback
-  const instrumentos = await fetchAll('instrumento_deuda', {
-    filter: { ente_id: enteId, ejercicio_id: ejercicioId },
-    order: { column: 'clave', ascending: true },
-  });
+  const { data: instrumentos, error: iError } = await supabase
+    .from('instrumento_deuda')
+    .select('*')
+    .eq('ente_id', enteId)
+    .eq('ejercicio_id', ejercicioId)
+    .order('clave');
+  if (iError) throw iError;
   if (!instrumentos.length) return [];
 
-  const instrumentoIds = new Set(instrumentos.map((i) => i.id));
-  const allMovs = await fetchAll('movimiento_deuda');
-  const movimientos = allMovs.filter((m) => instrumentoIds.has(m.instrumento_id));
+  const instrumentoIds = instrumentos.map((i) => i.id);
+  const { data: movimientos, error: mError } = await supabase
+    .from('movimiento_deuda')
+    .select('*')
+    .in('instrumento_id', instrumentoIds);
+  if (mError) throw mError;
+
   const totalesMap = aggregateMovimientosPorInstrumento(movimientos);
 
   return instrumentos.map((i) => ({
@@ -81,64 +58,35 @@ export async function fetchInstrumentosConSaldo(enteId, ejercicioId) {
 // MOVIMIENTOS DE DEUDA
 // ═════════════════════════════════════════════════════════════════════
 
-/**
- * Fetch movimientos de deuda for a specific instrumento.
- */
 export async function fetchMovimientosDeuda(instrumentoId) {
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('movimiento_deuda')
-      .select('*, instrumento:instrumento_deuda(clave, descripcion)')
-      .eq('instrumento_id', instrumentoId)
-      .order('fecha', { ascending: false });
-    if (error) throw error;
-    return data;
-  }
-
-  // localStorage fallback
-  const data = await fetchAll('movimiento_deuda', {
-    order: { column: 'fecha', ascending: false },
-  });
-  return data.filter((m) => m.instrumento_id === instrumentoId);
+  const { data, error } = await supabase
+    .from('movimiento_deuda')
+    .select('*, instrumento:instrumento_deuda(clave, descripcion)')
+    .eq('instrumento_id', instrumentoId)
+    .order('fecha', { ascending: false });
+  if (error) throw error;
+  return data;
 }
 
 // ═════════════════════════════════════════════════════════════════════
 // RESUMEN DE DEUDA
 // ═════════════════════════════════════════════════════════════════════
 
-/**
- * Fetch a summary of all deuda: saldo total, intereses pagados,
- * amortizaciones, and count of instrumentos.
- */
 export async function fetchResumenDeuda(enteId, ejercicioId) {
-  if (supabase) {
-    const { data: instrumentos, error: iError } = await supabase
-      .from('instrumento_deuda')
-      .select('id, saldo_vigente')
-      .eq('ente_id', enteId)
-      .eq('ejercicio_id', ejercicioId);
-    if (iError) throw iError;
-    if (!instrumentos.length) return emptyResumenDeuda();
-
-    const instrumentoIds = instrumentos.map((i) => i.id);
-    const { data: movimientos, error: mError } = await supabase
-      .from('movimiento_deuda')
-      .select('tipo, monto')
-      .in('instrumento_id', instrumentoIds);
-    if (mError) throw mError;
-
-    return computeResumen(instrumentos, movimientos);
-  }
-
-  // localStorage fallback
-  const instrumentos = await fetchAll('instrumento_deuda', {
-    filter: { ente_id: enteId, ejercicio_id: ejercicioId },
-  });
+  const { data: instrumentos, error: iError } = await supabase
+    .from('instrumento_deuda')
+    .select('id, saldo_vigente')
+    .eq('ente_id', enteId)
+    .eq('ejercicio_id', ejercicioId);
+  if (iError) throw iError;
   if (!instrumentos.length) return emptyResumenDeuda();
 
-  const instrumentoIds = new Set(instrumentos.map((i) => i.id));
-  const allMovs = await fetchAll('movimiento_deuda');
-  const movimientos = allMovs.filter((m) => instrumentoIds.has(m.instrumento_id));
+  const instrumentoIds = instrumentos.map((i) => i.id);
+  const { data: movimientos, error: mError } = await supabase
+    .from('movimiento_deuda')
+    .select('tipo, monto')
+    .in('instrumento_id', instrumentoIds);
+  if (mError) throw mError;
 
   return computeResumen(instrumentos, movimientos);
 }

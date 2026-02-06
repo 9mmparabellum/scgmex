@@ -15,6 +15,7 @@ import { useAppStore } from '../../stores/appStore';
 import { TIPOS_POLIZA, ESTADOS_POLIZA } from '../../config/constants';
 import { ROUTES } from '../../config/routes';
 import { formatNumeroPoliza, validarPartidaDoble } from '../../utils/polizaHelpers';
+import { validarPolizaCuadrada } from '../../utils/validaciones';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
@@ -93,6 +94,9 @@ export default function PolizaForm() {
   /* ---- CuentaSelector state ---------------------------------------------- */
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [selectorIdx, setSelectorIdx] = useState(null);
+
+  /* ---- Validation error state -------------------------------------------- */
+  const [validationError, setValidationError] = useState('');
 
   /* ---- Cancel dialog state ----------------------------------------------- */
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -220,6 +224,12 @@ export default function PolizaForm() {
     isBalanced;
 
   const handleSave = useCallback(async () => {
+    setValidationError('');
+    const resultado = validarPolizaCuadrada(movimientos);
+    if (!resultado.valido) {
+      setValidationError(resultado.mensaje);
+      return;
+    }
     const header = {
       ente_id: entePublico?.id,
       ejercicio_id: ejercicioFiscal?.id,
@@ -606,6 +616,11 @@ export default function PolizaForm() {
       {/* Balance Bar (sticky)                                                */}
       {/* ------------------------------------------------------------------ */}
       <div className="sticky bottom-0 bg-white rounded-lg card-shadow p-4 mb-4 border-t-2 border-guinda/20">
+        {validationError && (
+          <div className="mb-3 p-3 bg-danger/10 border border-danger/20 rounded-md text-danger text-sm">
+            {validationError}
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div>

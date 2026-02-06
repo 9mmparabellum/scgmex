@@ -1148,3 +1148,79 @@ CREATE TRIGGER trg_audit_movimiento_deuda
 
 CREATE TRIGGER trg_audit_fondo_federal
   AFTER INSERT OR UPDATE OR DELETE ON fondo_federal FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- FASE 6: Usuarios + Row Level Security
+-- ═══════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auth_id UUID UNIQUE,
+  ente_id UUID REFERENCES ente_publico(id),
+  nombre VARCHAR(200) NOT NULL,
+  email VARCHAR(200) NOT NULL UNIQUE,
+  rol VARCHAR(30) NOT NULL DEFAULT 'consulta',
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_usuarios_auth_id ON usuarios(auth_id);
+CREATE INDEX idx_usuarios_ente ON usuarios(ente_id);
+
+CREATE TRIGGER trg_usuarios_updated_at
+  BEFORE UPDATE ON usuarios FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_audit_usuarios
+  AFTER INSERT OR UPDATE OR DELETE ON usuarios FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- ── Row Level Security ──────────────────────────────────────────────
+-- All tables: authenticated users have full access (app-level RBAC handles permissions)
+
+ALTER TABLE ente_publico ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ejercicio_fiscal ENABLE ROW LEVEL SECURITY;
+ALTER TABLE periodo_contable ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_de_cuentas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clasificador_presupuestal ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matriz_conversion ENABLE ROW LEVEL SECURITY;
+ALTER TABLE poliza ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_contable ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saldo_cuenta ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bitacora ENABLE ROW LEVEL SECURITY;
+ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partida_egreso ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_presupuestal_egreso ENABLE ROW LEVEL SECURITY;
+ALTER TABLE concepto_ingreso ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_presupuestal_ingreso ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bien_patrimonial ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventario_conteo ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fideicomiso ENABLE ROW LEVEL SECURITY;
+ALTER TABLE instrumento_deuda ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_deuda ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fondo_federal ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY auth_full_access ON ente_publico FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON ejercicio_fiscal FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON periodo_contable FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON plan_de_cuentas FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON clasificador_presupuestal FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON matriz_conversion FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON poliza FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_contable FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON saldo_cuenta FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON bitacora FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON usuarios FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON partida_egreso FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_presupuestal_egreso FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON concepto_ingreso FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_presupuestal_ingreso FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON bien_patrimonial FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON inventario_conteo FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON fideicomiso FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON instrumento_deuda FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_deuda FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON fondo_federal FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ── Seed admin user profile ─────────────────────────────────────────
+INSERT INTO usuarios (nombre, email, rol) VALUES
+  ('Administrador General', 'admin@scgmex.gob.mx', 'super_admin');

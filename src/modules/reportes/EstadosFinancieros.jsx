@@ -10,6 +10,7 @@ import {
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import { exportToExcel } from '../../utils/exportHelpers';
+import { exportToPdf } from '../../utils/exportPdfHelpers';
 
 const fmtMoney = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n || 0);
@@ -275,6 +276,65 @@ export default function EstadosFinancieros() {
     }
   };
 
+  const handleExportPdf = () => {
+    switch (activeTab) {
+      case 'situacion': {
+        const allRows = [
+          ...situacionActivo.map((r) => ({ seccion: 'ACTIVO', ...r })),
+          ...situacionPasivo.map((r) => ({ seccion: 'PASIVO', ...r })),
+          ...situacionHacienda.map((r) => ({ seccion: 'HACIENDA PUBLICA', ...r })),
+        ];
+        exportToPdf(allRows, [
+          { key: 'seccion', label: 'Seccion' },
+          { key: 'codigo', label: 'Codigo' },
+          { key: 'nombre', label: 'Nombre' },
+          { key: 'saldo_final', label: 'Saldo Final' },
+        ], 'estado_situacion_financiera', { title: 'Estado de Situacion Financiera' });
+        break;
+      }
+      case 'actividades': {
+        const allRows = [
+          ...actIngresos.map((r) => ({ seccion: 'INGRESOS', ...r })),
+          ...actGastos.map((r) => ({ seccion: 'GASTOS', ...r })),
+        ];
+        exportToPdf(allRows, [
+          { key: 'seccion', label: 'Seccion' },
+          { key: 'codigo', label: 'Codigo' },
+          { key: 'nombre', label: 'Nombre' },
+          { key: 'monto', label: 'Monto' },
+        ], 'estado_actividades', { title: 'Estado de Actividades' });
+        break;
+      }
+      case 'variacion': {
+        const allRows = [
+          ...varContribuida.map((r) => ({ seccion: 'HACIENDA CONTRIBUIDA', ...r })),
+          ...varGenerada.map((r) => ({ seccion: 'HACIENDA GENERADA', ...r })),
+          ...varExceso.map((r) => ({ seccion: 'EXCESO/INSUFICIENCIA', ...r })),
+        ];
+        exportToPdf(allRows, [
+          { key: 'seccion', label: 'Seccion' },
+          { key: 'codigo', label: 'Codigo' },
+          { key: 'nombre', label: 'Nombre' },
+          { key: 'saldo', label: 'Saldo' },
+        ], 'estado_variacion_hacienda', { title: 'Estado de Variacion en la Hacienda Publica' });
+        break;
+      }
+      case 'analitico': {
+        exportToPdf(analiticoCuentas, [
+          { key: 'codigo', label: 'Codigo' },
+          { key: 'nombre', label: 'Nombre' },
+          { key: 'saldo_inicial', label: 'Saldo Inicial' },
+          { key: 'debe', label: 'Debe' },
+          { key: 'haber', label: 'Haber' },
+          { key: 'saldo_final', label: 'Saldo Final' },
+        ], 'estado_analitico_activo', { title: 'Estado Analitico del Activo' });
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   /* ---------------------------------------------------------------- */
   /*  Check if there is data for the current tab                       */
   /* ---------------------------------------------------------------- */
@@ -316,6 +376,12 @@ export default function EstadosFinancieros() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Exportar XLSX
+            </Button>
+            <Button variant="ghost" onClick={handleExportPdf} disabled={!periodoId || !hasData || activeTab === 'notas'}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Exportar PDF
             </Button>
           </div>
         </div>

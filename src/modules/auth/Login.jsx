@@ -22,8 +22,8 @@ export default function Login() {
       } else {
         setError('Credenciales invalidas');
       }
-    } catch {
-      setError('Error al iniciar sesion');
+    } catch (err) {
+      setError(err?.message === 'Invalid login credentials' ? 'Credenciales invalidas' : err?.message || 'Error al iniciar sesion');
     } finally {
       setLoading(false);
     }
@@ -171,9 +171,6 @@ export default function Login() {
 
         {/* Footer text */}
         <div className="text-center mt-6 space-y-2">
-          <p className="text-text-muted text-xs">
-            Demo — cualquier credencial es valida
-          </p>
           <p className="text-text-secondary text-xs font-medium tracking-wide">
             Gobierno de Mexico
           </p>

@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import { exportToExcel } from '../../utils/exportHelpers';
+import { exportToPdf } from '../../utils/exportPdfHelpers';
 import { useSaldosCuenta } from '../../hooks/usePoliza';
 
 const fmtMoney = (n) =>
@@ -82,6 +83,17 @@ export default function BalanzaComprobacion() {
     );
   };
 
+  const handleExportPdf = () => {
+    exportToPdf(balanzaData, [
+      { key: 'codigo', label: 'Codigo' },
+      { key: 'nombre', label: 'Nombre' },
+      { key: 'saldo_inicial', label: 'Saldo Inicial' },
+      { key: 'total_debe', label: 'Debe' },
+      { key: 'total_haber', label: 'Haber' },
+      { key: 'saldo_final', label: 'Saldo Final' },
+    ], 'balanza_comprobacion', { title: 'Balanza de Comprobacion' });
+  };
+
   return (
     <div>
       {/* Page header */}
@@ -109,6 +121,12 @@ export default function BalanzaComprobacion() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Exportar XLSX
+            </Button>
+            <Button variant="ghost" onClick={handleExportPdf} disabled={!balanzaData?.length}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Exportar PDF
             </Button>
           </div>
         </div>

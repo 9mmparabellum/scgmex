@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export const useAppStore = create((set) => ({
-  // Current authenticated user (mock for now)
+  // Current authenticated user
   user: null,
   setUser: (user) => set({ user }),
 
@@ -22,7 +22,7 @@ export const useAppStore = create((set) => ({
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
   // User role for current entity
-  rol: 'super_admin',
+  rol: null,
   setRol: (rol) => set({ rol }),
 
   // Logout

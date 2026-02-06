@@ -7,6 +7,7 @@ import { useResumenPatrimonio } from '../../hooks/usePatrimonio';
 import { useResumenDeuda } from '../../hooks/useDeuda';
 import Button from '../../components/ui/Button';
 import { exportToExcel } from '../../utils/exportHelpers';
+import { exportToPdf } from '../../utils/exportPdfHelpers';
 
 const fmtMoney = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n || 0);
