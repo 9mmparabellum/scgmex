@@ -114,33 +114,34 @@ function MenuItem({ item }) {
 
   if (item.children) {
     return (
-      <div className="mb-0.5">
+      <div>
         <button
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-text-sidebar hover:bg-guinda/80 transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 text-[13px] text-white/50 hover:text-white/80 hover:bg-white/[0.04] rounded-lg mx-2 transition-all cursor-pointer"
+          style={{ width: 'calc(100% - 16px)' }}
         >
           <span className="flex items-center gap-3">
-            <span className="opacity-70">{item.icon}</span>
+            {item.icon}
             <span>{item.label}</span>
           </span>
           <svg
-            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-            className={`transition-transform ${open ? 'rotate-180' : ''}`}
+            width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           >
             <polyline points="6,9 12,15 18,9" />
           </svg>
         </button>
-        {open && (
-          <div className="bg-guinda-dark/50">
+        <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="ml-5 pl-4 border-l border-white/[0.06] mt-1 mb-1 space-y-0.5">
             {item.children.map((child) => (
               <NavLink
                 key={child.path}
                 to={child.path}
                 className={({ isActive }) =>
-                  `block px-4 py-2 pl-12 text-[13px] transition-colors border-l-2 ${
+                  `block px-3 py-1.5 text-[13px] rounded-md transition-all ${
                     isActive
-                      ? 'bg-guinda/60 text-white font-medium border-dorado'
-                      : 'text-text-sidebar hover:bg-guinda/40 hover:text-white border-transparent'
+                      ? 'text-white bg-guinda/80'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03]'
                   }`
                 }
               >
@@ -148,7 +149,7 @@ function MenuItem({ item }) {
               </NavLink>
             ))}
           </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -157,14 +158,14 @@ function MenuItem({ item }) {
     <NavLink
       to={item.path}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors border-l-2 mb-0.5 ${
+        `flex items-center gap-3 px-3 py-2 text-[13px] rounded-lg mx-2 transition-all ${
           isActive
-            ? 'bg-guinda/60 text-white font-medium border-dorado'
-            : 'text-text-sidebar hover:bg-guinda/40 hover:text-white border-transparent'
+            ? 'text-white bg-guinda/80'
+            : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'
         }`
       }
     >
-      <span className="opacity-70">{item.icon}</span>
+      {item.icon}
       <span>{item.label}</span>
     </NavLink>
   );
@@ -176,40 +177,31 @@ export default function Sidebar() {
   if (!sidebarOpen) return null;
 
   return (
-    <aside className="w-64 bg-guinda-dark min-h-screen flex flex-col fixed left-0 top-0 z-40">
-      {/* Top gold stripe */}
-      <div className="h-1 bg-dorado" />
-
+    <aside className="w-[260px] bg-[#0c0c0c] min-h-screen flex flex-col fixed left-0 top-0 z-40 border-r border-white/[0.06]">
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-guinda/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-dorado rounded flex items-center justify-center">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#621132" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-white font-bold text-sm tracking-wide">SCGMEX</div>
-            <div className="text-text-sidebar text-[10px] leading-tight">
-              Contabilidad Gubernamental
-            </div>
-          </div>
+      <div className="px-5 py-5 flex items-center gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-guinda to-guinda-dark rounded-lg flex items-center justify-center shadow-lg shadow-guinda/10">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BC955C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11" />
+          </svg>
+        </div>
+        <div>
+          <div className="text-white font-semibold text-sm tracking-wide">SCGMEX</div>
+          <div className="text-white/25 text-[10px]">Contabilidad Gubernamental</div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 overflow-y-auto">
+      <nav className="flex-1 py-2 space-y-0.5 overflow-y-auto px-1">
         {menuItems.map((item, i) => (
           <MenuItem key={i} item={item} />
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-guinda/50">
-        <div className="text-[10px] text-text-sidebar/60 text-center leading-relaxed">
+      <div className="px-5 py-4 border-t border-white/[0.06]">
+        <div className="text-[10px] text-white/20 text-center">
           Gobierno de Mexico
-          <br />
-          LGCG DOF 16-07-2025
         </div>
       </div>
     </aside>

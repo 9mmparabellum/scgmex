@@ -7,9 +7,9 @@ export default function AppShell() {
   const { sidebarOpen } = useAppStore();
 
   return (
-    <div className="min-h-screen bg-bg-main">
+    <div className="min-h-screen bg-[#fafafa]">
       <Sidebar />
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-[260px]' : 'ml-0'}`}>
         <Header />
         <main className="p-6">
           <Outlet />

@@ -58,63 +58,41 @@ export default function DataTable({
     }
   };
 
-  const SortIcon = ({ colKey }) => {
-    if (sortKey !== colKey) {
-      return (
-        <svg className="w-3 h-3 text-text-muted/50 ml-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      );
-    }
-    return sortDir === 'asc' ? (
-      <svg className="w-3 h-3 text-guinda ml-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path d="M5 15l7-7 7 7" />
-      </svg>
-    ) : (
-      <svg className="w-3 h-3 text-guinda ml-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    );
-  };
-
   return (
     <div className="w-full">
       {searchable && (
         <div className="mb-4">
-          <div className="relative max-w-xs">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="block w-full rounded border border-border bg-white text-text-primary text-sm pl-9 pr-3 py-2 placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-guinda/20 focus:border-guinda transition-colors"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full max-w-xs px-3 py-2 bg-white border border-[#e0e0e0] rounded-lg text-sm text-[#333] placeholder:text-[#bbb] focus:outline-none focus:border-guinda/40 focus:ring-1 focus:ring-guinda/10 transition-all"
+          />
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-border/60 shadow-sm">
+      <div className="bg-white rounded-xl border border-[#eee] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#FAFAFA] border-b border-border">
+            <tr className="border-b border-[#f0f0f0]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={[
-                    'text-left text-[11px] font-semibold text-text-muted uppercase tracking-wider px-4 py-3',
-                    col.sortable !== false ? 'cursor-pointer select-none hover:text-text-primary' : '',
+                    'text-left text-[11px] font-medium text-[#aaa] uppercase tracking-wider px-5 py-3',
+                    col.sortable !== false ? 'cursor-pointer select-none hover:text-[#666]' : '',
                   ].join(' ')}
                   style={col.width ? { width: col.width } : undefined}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                 >
-                  <span className="inline-flex items-center">
+                  <span className="inline-flex items-center gap-1">
                     {col.label}
-                    {col.sortable !== false && <SortIcon colKey={col.key} />}
+                    {col.sortable !== false && sortKey === col.key && (
+                      <svg className="w-3 h-3 text-guinda" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        {sortDir === 'asc' ? <path d="M5 15l7-7 7 7" /> : <path d="M19 9l-7 7-7-7" />}
+                      </svg>
+                    )}
                   </span>
                 </th>
               ))}
@@ -123,15 +101,8 @@ export default function DataTable({
           <tbody>
             {pagedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-16 text-text-muted">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 bg-bg-hover rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                      </svg>
-                    </div>
-                    <span className="text-sm">Sin resultados</span>
-                  </div>
+                <td colSpan={columns.length} className="text-center py-12 text-[#bbb]">
+                  <p className="text-sm">Sin resultados</p>
                 </td>
               </tr>
             ) : (
@@ -140,12 +111,12 @@ export default function DataTable({
                   key={row.id ?? rowIdx}
                   onClick={() => onRowClick?.(row)}
                   className={[
-                    'bg-white border-b border-border/30 transition-colors',
-                    onRowClick ? 'cursor-pointer hover:bg-guinda/[0.02]' : 'hover:bg-bg-hover/30',
+                    'border-b border-[#f8f8f8] last:border-0 transition-colors',
+                    onRowClick ? 'cursor-pointer hover:bg-[#fafafa]' : 'hover:bg-[#fcfcfc]',
                   ].join(' ')}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-text-primary">
+                    <td key={col.key} className="px-5 py-3 text-[#333]">
                       {col.render
                         ? col.render(row[col.key], row)
                         : (row[col.key] ?? '—')}
@@ -159,26 +130,25 @@ export default function DataTable({
       </div>
 
       {sortedData.length > pageSize && (
-        <div className="flex items-center justify-between mt-4 text-sm text-text-secondary">
-          <span className="text-xs text-text-muted">
-            Mostrando {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, sortedData.length)} de{' '}
-            {sortedData.length}
+        <div className="flex items-center justify-between mt-4 text-sm">
+          <span className="text-xs text-[#aaa]">
+            {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, sortedData.length)} de {sortedData.length}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={safePage === 0}
-              className="px-3 py-1.5 rounded border border-border text-xs text-text-secondary hover:bg-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-xs text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Anterior
             </button>
-            <span className="px-3 py-1.5 text-xs text-text-muted">
+            <span className="px-3 py-1.5 text-xs text-[#aaa]">
               {safePage + 1}/{totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={safePage >= totalPages - 1}
-              className="px-3 py-1.5 rounded border border-border text-xs text-text-secondary hover:bg-bg-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-xs text-[#666] hover:bg-[#f5f5f5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Siguiente
             </button>

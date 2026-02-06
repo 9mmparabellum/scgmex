@@ -26,34 +26,25 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-
-      {/* Dialog */}
       <div
-        className={`relative w-full ${sizeClasses[size] || sizeClasses.md} bg-white rounded-lg shadow-2xl transform transition-all overflow-hidden`}
+        className={`relative w-full ${sizeClasses[size] || sizeClasses.md} bg-white rounded-xl shadow-2xl overflow-hidden`}
       >
-        {/* Guinda top accent */}
-        <div className="h-1 bg-guinda" />
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#eee]">
+          <h2 className="text-[15px] font-semibold text-[#111]">{title}</h2>
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary transition-colors p-1.5 rounded-lg hover:bg-bg-hover cursor-pointer"
+            className="text-[#ccc] hover:text-[#666] transition-colors p-1 rounded-lg hover:bg-[#f5f5f5] cursor-pointer"
             aria-label="Cerrar"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
-
-        {/* Body */}
         <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
           {children}
         </div>
