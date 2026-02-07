@@ -184,7 +184,7 @@ export async function consultarCFDI(facturamaCfdiId) {
  * Download CFDI XML (returns base64 string)
  */
 export async function descargarXML(facturamaCfdiId) {
-  const resp = await facturamaFetch(`/cfdi/${facturamaCfdiId}/xml?type=issued`);
+  const resp = await facturamaFetch(`/cfdi/xml/issued/${facturamaCfdiId}`);
   const text = await resp.text();
   return text;
 }
@@ -193,7 +193,7 @@ export async function descargarXML(facturamaCfdiId) {
  * Download CFDI PDF (returns base64 string)
  */
 export async function descargarPDF(facturamaCfdiId) {
-  const resp = await facturamaFetch(`/cfdi/${facturamaCfdiId}/pdf?type=issued`);
+  const resp = await facturamaFetch(`/cfdi/pdf/issued/${facturamaCfdiId}`);
   const text = await resp.text();
   return text;
 }
