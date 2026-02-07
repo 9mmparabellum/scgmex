@@ -111,6 +111,9 @@ const DocumentosFirma = lazy(() => import('./modules/efirma/DocumentosFirma'));
 const AnomaliasMain = lazy(() => import('./modules/anomalias/AnomaliasMain'));
 const ReglasAnomalia = lazy(() => import('./modules/anomalias/ReglasAnomalia'));
 
+// Portal Publico (sin autenticacion)
+const PortalPublico = lazy(() => import('./modules/portal-publico/PortalPublico'));
+
 // Batch 2: Tesoreria + Conciliacion Bancaria
 const TesoreriaMain = lazy(() => import('./modules/tesoreria/TesoreriaMain'));
 const CuentasBancarias = lazy(() => import('./modules/tesoreria/CuentasBancarias'));
@@ -141,6 +144,7 @@ export default function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path={ROUTES.LOGIN} element={<LoginRoute />} />
+          <Route path={ROUTES.PORTAL_PUBLICO} element={<PortalPublico />} />
           <Route
             element={
               <ProtectedRoute>

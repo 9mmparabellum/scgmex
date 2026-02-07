@@ -115,4 +115,6 @@ export const ROUTES = {
   // IA Anomaly Detection
   ANOMALIAS: '/anomalias',
   REGLAS_ANOMALIA: '/anomalias/reglas',
+  // Portal Publico (sin autenticacion)
+  PORTAL_PUBLICO: '/portal',
 };
