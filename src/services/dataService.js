@@ -25,6 +25,12 @@ export async function create(table, record) {
   return data;
 }
 
+export async function createMany(table, records) {
+  const { data, error } = await supabase.from(table).insert(records).select();
+  if (error) throw error;
+  return data;
+}
+
 export async function update(table, id, changes) {
   const { data, error } = await supabase.from(table).update(changes).eq('id', id).select().single();
   if (error) throw error;

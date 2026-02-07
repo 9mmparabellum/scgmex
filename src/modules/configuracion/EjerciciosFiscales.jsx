@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useList, useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
+import { createMany } from '../../services/dataService';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -88,10 +89,10 @@ export default function EjerciciosFiscales() {
     order: { column: 'anio', ascending: false },
   });
 
+  const { setEjercicioFiscal } = useAppStore();
   const createEjercicio = useCreate('ejercicio_fiscal');
   const updateEjercicio = useUpdate('ejercicio_fiscal');
   const removeEjercicio = useRemove('ejercicio_fiscal');
-  const createPeriodo = useCreate('periodo_contable');
 
   // ---- UI state ----
   const [modalOpen, setModalOpen] = useState(false);
@@ -167,11 +168,12 @@ export default function EjerciciosFiscales() {
           estado: form.estado,
         });
 
-        // Auto-generate 13 periodos contables
+        // Auto-generate 13 periodos contables (batch insert)
         const periodos = buildPeriodos(newEjercicio.id, Number(form.anio));
-        for (const periodo of periodos) {
-          await createPeriodo.mutateAsync(periodo);
-        }
+        await createMany('periodo_contable', periodos);
+
+        // Set as active ejercicio in store
+        setEjercicioFiscal(newEjercicio);
       }
       closeModal();
     } catch (err) {
