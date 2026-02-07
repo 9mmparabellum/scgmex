@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useList, useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
+import { supabaseAdmin } from '../../config/supabaseAdmin';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -43,45 +44,70 @@ const EMPTY_FORM = {
   nombre: '',
   email: '',
   rol: '',
+  ente_id: '',
   activo: true,
+  password: '',
 };
 
-const columns = [
-  {
-    key: 'nombre',
-    label: 'Nombre',
-  },
-  {
-    key: 'email',
-    label: 'Email',
-    render: (value) => (
-      <span className="font-mono text-xs text-text-secondary">{value || '--'}</span>
-    ),
-  },
-  {
-    key: 'rol',
-    label: 'Rol',
-    width: '200px',
-    render: (value) => (
-      <Badge variant={ROL_BADGE_MAP[value] || 'default'}>
-        {ROL_LABEL_MAP[value] || value || '--'}
-      </Badge>
-    ),
-  },
-  {
-    key: 'activo',
-    label: 'Estado',
-    width: '120px',
-    render: (value) => (
-      <Badge variant={value ? 'success' : 'danger'}>
-        {value ? 'Activo' : 'Inactivo'}
-      </Badge>
-    ),
-  },
-];
+// columns defined inside the component (needs enteMap)
 
 export default function Usuarios() {
   const { rol: currentUserRol } = useAppStore();
+
+  // Fetch entes for the selector
+  const { data: entes = [] } = useList('ente_publico', {
+    order: { column: 'nombre', ascending: true },
+  });
+
+  const enteOptions = useMemo(
+    () => entes.map((e) => ({ value: e.id, label: `${e.clave} — ${e.nombre}` })),
+    [entes]
+  );
+
+  const enteMap = useMemo(
+    () => Object.fromEntries(entes.map((e) => [e.id, e.nombre_corto || e.clave])),
+    [entes]
+  );
+
+  // Table columns
+  const columns = useMemo(() => [
+    { key: 'nombre', label: 'Nombre' },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (value) => (
+        <span className="font-mono text-xs text-text-secondary">{value || '--'}</span>
+      ),
+    },
+    {
+      key: 'ente_id',
+      label: 'Entidad',
+      width: '160px',
+      render: (value) => (
+        <span className="text-xs text-text-secondary">{enteMap[value] || (value ? '...' : 'Global')}</span>
+      ),
+    },
+    {
+      key: 'rol',
+      label: 'Rol',
+      width: '200px',
+      render: (value) => (
+        <Badge variant={ROL_BADGE_MAP[value] || 'default'}>
+          {ROL_LABEL_MAP[value] || value || '--'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'activo',
+      label: 'Estado',
+      width: '120px',
+      render: (value) => (
+        <Badge variant={value ? 'success' : 'danger'}>
+          {value ? 'Activo' : 'Inactivo'}
+        </Badge>
+      ),
+    },
+  ], [enteMap]);
 
   // CRUD hooks
   const { data: usuarios = [], isLoading } = useList(TABLE, {
@@ -98,6 +124,8 @@ export default function Usuarios() {
   const [errors, setErrors] = useState({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMsg, setResetMsg] = useState(null);
 
   // --- Helpers ---
 
@@ -114,9 +142,11 @@ export default function Usuarios() {
       nombre: row.nombre ?? '',
       email: row.email ?? '',
       rol: row.rol ?? '',
+      ente_id: row.ente_id ?? '',
       activo: row.activo ?? true,
     });
     setErrors({});
+    setResetMsg(null);
     setModalOpen(true);
   };
 
@@ -150,6 +180,14 @@ export default function Usuarios() {
       }
     }
     if (!form.rol) newErrors.rol = 'Seleccione un rol';
+    if (form.rol && form.rol !== 'super_admin' && !form.ente_id) {
+      newErrors.ente_id = 'Seleccione la entidad a la que pertenece el usuario';
+    }
+    if (!editing) {
+      if (!form.password || form.password.length < 8) {
+        newErrors.password = 'La contrasena debe tener al menos 8 caracteres';
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -162,6 +200,7 @@ export default function Usuarios() {
       nombre: form.nombre.trim(),
       email: form.email.trim().toLowerCase(),
       rol: form.rol,
+      ente_id: form.ente_id || null,
       activo: form.activo,
     };
 
@@ -169,11 +208,42 @@ export default function Usuarios() {
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.id, ...payload });
       } else {
-        await createMutation.mutateAsync(payload);
+        // Create Supabase Auth user first
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: payload.email,
+          password: form.password,
+          email_confirm: true,
+        });
+        if (authError) throw authError;
+
+        // Create profile record linked to auth user
+        await createMutation.mutateAsync({
+          ...payload,
+          auth_id: authData.user.id,
+        });
       }
       closeModal();
-    } catch {
-      // Error handling managed by react-query mutation state
+    } catch (err) {
+      if (err?.message?.includes('already been registered')) {
+        setErrors({ email: 'Este email ya esta registrado en el sistema' });
+      }
+    }
+  };
+
+  const handleResetPassword = async (email) => {
+    setResetLoading(true);
+    setResetMsg(null);
+    try {
+      const { error } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'recovery',
+        email,
+      });
+      if (error) throw error;
+      setResetMsg({ ok: true, text: 'Enlace de recuperacion generado. El usuario recibira un email.' });
+    } catch (err) {
+      setResetMsg({ ok: false, text: err.message || 'Error al enviar enlace' });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -296,6 +366,36 @@ export default function Usuarios() {
             error={errors.rol}
           />
 
+          {form.rol !== 'super_admin' && (
+            <Select
+              label={`Ente Publico ${form.rol && form.rol !== 'super_admin' ? '*' : ''}`}
+              placeholder="Seleccionar entidad..."
+              options={enteOptions}
+              value={form.ente_id}
+              onChange={(e) => handleChange('ente_id', e.target.value)}
+              error={errors.ente_id}
+            />
+          )}
+
+          {form.rol === 'super_admin' && (
+            <div className="bg-bg-hover rounded-md p-3">
+              <p className="text-xs text-text-muted">
+                <span className="font-semibold text-text-secondary">Super Administrador</span> tiene acceso global a todas las entidades del sistema.
+              </p>
+            </div>
+          )}
+
+          {!editing && (
+            <Input
+              label="Contrasena *"
+              type="password"
+              placeholder="Minimo 8 caracteres"
+              value={form.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              error={errors.password}
+            />
+          )}
+
           {/* Activo checkbox */}
           <div className="flex items-center gap-3">
             <input
@@ -312,6 +412,28 @@ export default function Usuarios() {
               Usuario activo
             </label>
           </div>
+
+          {editing && (
+            <div className="border border-border rounded-md p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-heading">Contrasena</p>
+                  <p className="text-xs text-text-muted mt-0.5">Enviar enlace para restablecer contrasena</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleResetPassword(editing.email)}
+                  disabled={resetLoading}
+                  className="h-[34px] px-3 text-xs font-medium rounded-md border border-guinda text-guinda hover:bg-guinda/5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {resetLoading ? 'Enviando...' : 'Enviar Enlace'}
+                </button>
+              </div>
+              {resetMsg && (
+                <p className={`text-xs mt-2 ${resetMsg.ok ? 'text-verde' : 'text-danger'}`}>{resetMsg.text}</p>
+              )}
+            </div>
+          )}
 
           {/* Role description */}
           {form.rol && (

@@ -69,12 +69,12 @@ export default function DeudaPublica() {
 
   // --- Select options ---
   const tipoDeudaOptions = useMemo(
-    () => TIPOS_DEUDA.map((t) => ({ value: t.key ?? t, label: t.label ?? t })),
+    () => Object.entries(TIPOS_DEUDA).map(([value, label]) => ({ value, label })),
     []
   );
 
   const estadoDeudaOptions = useMemo(
-    () => ESTADOS_DEUDA.map((e) => ({ value: e.key ?? e, label: e.label ?? e })),
+    () => Object.entries(ESTADOS_DEUDA).map(([value, obj]) => ({ value, label: obj.label })),
     []
   );
 
@@ -108,14 +108,11 @@ export default function DeudaPublica() {
     return variants[tipo] || 'default';
   };
 
-  const tipoLabel = (tipo) => {
-    const found = TIPOS_DEUDA.find((t) => (t.key ?? t) === tipo);
-    return found ? (found.label ?? found) : tipo;
-  };
+  const tipoLabel = (tipo) => TIPOS_DEUDA[tipo] || tipo;
 
   const estadoLabel = (estado) => {
-    const found = ESTADOS_DEUDA.find((e) => (e.key ?? e) === estado);
-    return found ? (found.label ?? found) : estado;
+    const entry = ESTADOS_DEUDA[estado];
+    return entry ? (entry.label ?? entry) : estado;
   };
 
   const tipoMovLabel = (tipo) => {

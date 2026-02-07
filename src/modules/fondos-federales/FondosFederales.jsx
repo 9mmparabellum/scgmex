@@ -53,12 +53,12 @@ export default function FondosFederales() {
 
   // --- Select options ---
   const tipoFondoOptions = useMemo(
-    () => TIPOS_FONDO_FEDERAL.map((t) => ({ value: t.key ?? t, label: t.label ?? t })),
+    () => Object.entries(TIPOS_FONDO_FEDERAL).map(([value, label]) => ({ value, label })),
     []
   );
 
   const estadoFondoOptions = useMemo(
-    () => ESTADOS_FONDO.map((e) => ({ value: e.key ?? e, label: e.label ?? e })),
+    () => Object.entries(ESTADOS_FONDO).map(([value, obj]) => ({ value, label: obj.label })),
     []
   );
 
@@ -80,14 +80,11 @@ export default function FondosFederales() {
     return variants[estado] || 'default';
   };
 
-  const tipoLabel = (tipo) => {
-    const found = TIPOS_FONDO_FEDERAL.find((t) => (t.key ?? t) === tipo);
-    return found ? (found.label ?? found) : tipo;
-  };
+  const tipoLabel = (tipo) => TIPOS_FONDO_FEDERAL[tipo] || tipo;
 
   const estadoLabel = (estado) => {
-    const found = ESTADOS_FONDO.find((e) => (e.key ?? e) === estado);
-    return found ? (found.label ?? found) : estado;
+    const entry = ESTADOS_FONDO[estado];
+    return entry ? (entry.label ?? entry) : estado;
   };
 
   // --- Handlers ---

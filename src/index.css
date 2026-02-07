@@ -49,11 +49,8 @@
   --color-info: #03c3ec;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* TW4 Preflight already handles box-sizing, margin, and padding resets.
+   A bare * {} rule here would override @layer utilities (unlayered > layered). */
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;

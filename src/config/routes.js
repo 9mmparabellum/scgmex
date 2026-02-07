@@ -47,4 +47,5 @@ export const ROUTES = {
   SEGURIDAD: '/seguridad',
   BITACORA: '/seguridad/bitacora',
   USUARIOS: '/seguridad/usuarios',
+  PERFIL: '/perfil',
 };

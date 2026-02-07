@@ -71,12 +71,12 @@ export default function Bienes() {
 
   // --- Select options ---
   const tipoOptions = useMemo(
-    () => TIPOS_BIEN.map((t) => ({ value: t.value ?? t.key ?? t, label: t.label ?? t })),
+    () => Object.entries(TIPOS_BIEN).map(([value, label]) => ({ value, label })),
     []
   );
 
   const estadoOptions = useMemo(
-    () => ESTADOS_BIEN.map((e) => ({ value: e.value ?? e.key ?? e, label: e.label ?? e })),
+    () => Object.entries(ESTADOS_BIEN).map(([value, obj]) => ({ value, label: obj.label })),
     []
   );
 

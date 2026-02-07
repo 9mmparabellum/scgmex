@@ -63,12 +63,12 @@ export default function Fideicomisos() {
 
   // --- Select options ---
   const tipoOptions = useMemo(
-    () => TIPOS_FIDEICOMISO.map((t) => ({ value: t.value ?? t.key ?? t, label: t.label ?? t })),
+    () => Object.entries(TIPOS_FIDEICOMISO).map(([value, label]) => ({ value, label })),
     []
   );
 
   const estadoOptions = useMemo(
-    () => ESTADOS_FIDEICOMISO.map((e) => ({ value: e.value ?? e.key ?? e, label: e.label ?? e })),
+    () => Object.entries(ESTADOS_FIDEICOMISO).map(([value, obj]) => ({ value, label: obj.label })),
     []
   );
 

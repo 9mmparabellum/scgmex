@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../stores/appStore';
 import { useAuth } from '../../hooks/useAuth';
 import { usePolizasList } from '../../hooks/usePoliza';
+import { ROUTES } from '../../config/routes';
 
 /* ------------------------------------------------------------------ */
 /*  Estado badge color map                                             */
@@ -24,6 +26,7 @@ const estadoLabels = {
 /* ------------------------------------------------------------------ */
 
 export default function Header() {
+  const navigate = useNavigate();
   const { entePublico, ejercicioFiscal, toggleSidebar } = useAppStore();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -191,6 +194,23 @@ export default function Header() {
                     {user.email}
                   </div>
                 </div>
+
+                {/* Mi Perfil */}
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    navigate(ROUTES.PERFIL);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[0.8125rem] text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Mi Perfil
+                </button>
+
+                <div className="mx-3 my-1 border-t border-border" />
 
                 {/* Logout */}
                 <button
