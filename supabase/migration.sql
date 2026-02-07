@@ -1224,3 +1224,521 @@ CREATE POLICY auth_full_access ON fondo_federal FOR ALL TO authenticated USING (
 -- ── Seed admin user profile ─────────────────────────────────────────
 INSERT INTO usuarios (nombre, email, rol) VALUES
   ('Administrador General', 'admin@scgmex.gob.mx', 'super_admin');
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- BATCH 1: LGCG Compliance Modules (Conciliacion, MIR, Indicadores, Notas, Apertura)
+-- ═══════════════════════════════════════════════════════════════════════
+
+-- ---------------------------------------------
+-- B1.1 Conciliacion Contable-Presupuestal
+-- Documento que concilia los registros contables con los
+-- presupuestales (egresos e ingresos) para un periodo dado.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS conciliacion_contable_presupuestal (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id) ON DELETE CASCADE,
+  fecha_elaboracion DATE NOT NULL,
+  total_contable NUMERIC(18,2) NOT NULL DEFAULT 0,
+  total_presupuestal_egreso NUMERIC(18,2) NOT NULL DEFAULT 0,
+  total_presupuestal_ingreso NUMERIC(18,2) NOT NULL DEFAULT 0,
+  diferencia_egreso NUMERIC(18,2) NOT NULL DEFAULT 0,
+  diferencia_ingreso NUMERIC(18,2) NOT NULL DEFAULT 0,
+  estado VARCHAR(20) NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador','revisado','aprobado')),
+  observaciones TEXT,
+  elaborado_por UUID REFERENCES usuarios(id),
+  aprobado_por UUID REFERENCES usuarios(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, periodo_id)
+);
+
+-- ---------------------------------------------
+-- B1.2 Conciliacion Detalle
+-- Lineas de detalle de la conciliacion contable-presupuestal,
+-- vinculando cuentas contables con partidas/conceptos presupuestales.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS conciliacion_detalle (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conciliacion_id UUID NOT NULL REFERENCES conciliacion_contable_presupuestal(id) ON DELETE CASCADE,
+  tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('egreso','ingreso')),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  partida_egreso_id UUID REFERENCES partida_egreso(id),
+  concepto_ingreso_id UUID REFERENCES concepto_ingreso(id),
+  monto_contable NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_presupuestal NUMERIC(18,2) NOT NULL DEFAULT 0,
+  diferencia NUMERIC(18,2) NOT NULL DEFAULT 0,
+  conciliado BOOLEAN DEFAULT false,
+  observacion TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- B1.3 Programa Presupuestario
+-- Programas, proyectos y actividades del presupuesto por resultados
+-- vinculados a la Matriz de Indicadores para Resultados (MIR).
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS programa_presupuestario (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  nombre VARCHAR(300) NOT NULL,
+  objetivo TEXT,
+  tipo VARCHAR(30) CHECK (tipo IN ('programa','proyecto','actividad')),
+  clasificador_programatico_id UUID REFERENCES clasificador_presupuestal(id),
+  responsable VARCHAR(200),
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, clave)
+);
+
+-- ---------------------------------------------
+-- B1.4 Indicador MIR
+-- Indicadores de la Matriz de Indicadores para Resultados (MIR)
+-- con estructura de Marco Logico: fin, proposito, componente, actividad.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS indicador_mir (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  programa_id UUID NOT NULL REFERENCES programa_presupuestario(id) ON DELETE CASCADE,
+  nivel VARCHAR(30) NOT NULL CHECK (nivel IN ('fin','proposito','componente','actividad')),
+  resumen_narrativo TEXT NOT NULL,
+  nombre_indicador VARCHAR(300) NOT NULL,
+  metodo_calculo TEXT,
+  frecuencia_medicion VARCHAR(30) CHECK (frecuencia_medicion IN ('mensual','trimestral','semestral','anual')),
+  tipo_indicador VARCHAR(30) CHECK (tipo_indicador IN ('eficiencia','eficacia','economia','calidad')),
+  dimension VARCHAR(30) CHECK (dimension IN ('gestion','estrategico')),
+  meta_programada NUMERIC(18,4) DEFAULT 0,
+  meta_alcanzada NUMERIC(18,4) DEFAULT 0,
+  unidad_medida VARCHAR(100),
+  medios_verificacion TEXT,
+  supuestos TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- B1.5 Avance de Indicador
+-- Registros periodicos de avance para cada indicador MIR,
+-- vinculados al periodo contable correspondiente.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS avance_indicador (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  indicador_id UUID NOT NULL REFERENCES indicador_mir(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id),
+  valor_alcanzado NUMERIC(18,4) NOT NULL DEFAULT 0,
+  justificacion TEXT,
+  evidencia TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(indicador_id, periodo_id)
+);
+
+-- ---------------------------------------------
+-- B1.6 Indicador de Postura Fiscal
+-- Indicadores financieros y de postura fiscal requeridos por la LGCG
+-- para evaluar ingresos, gastos, balance, deuda y situacion financiera.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS indicador_postura_fiscal (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id) ON DELETE CASCADE,
+  clave VARCHAR(30) NOT NULL,
+  nombre VARCHAR(200) NOT NULL,
+  formula TEXT,
+  valor NUMERIC(18,4) NOT NULL DEFAULT 0,
+  valor_anterior NUMERIC(18,4) DEFAULT 0,
+  variacion NUMERIC(18,4) DEFAULT 0,
+  categoria VARCHAR(30) CHECK (categoria IN ('ingreso','gasto','balance','deuda','financiero')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, periodo_id, clave)
+);
+
+-- ---------------------------------------------
+-- B1.7 Nota a los Estados Financieros
+-- Notas de desglose, memoria y gestion que acompanan los
+-- estados financieros conforme a la normativa CONAC.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS nota_estado_financiero (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id) ON DELETE CASCADE,
+  tipo_nota VARCHAR(30) NOT NULL CHECK (tipo_nota IN ('desglose','memoria','gestion')),
+  estado_financiero VARCHAR(50) NOT NULL CHECK (estado_financiero IN ('situacion_financiera','actividades','variacion_hacienda','analitico_activo','flujo_efectivo','general')),
+  numero INTEGER NOT NULL,
+  titulo VARCHAR(300) NOT NULL,
+  contenido TEXT NOT NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador','revisado','aprobado')),
+  elaborado_por UUID REFERENCES usuarios(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, periodo_id, tipo_nota, numero)
+);
+
+-- ---------------------------------------------
+-- B1.8 Apertura de Ejercicio
+-- Proceso de apertura de un nuevo ejercicio fiscal a partir
+-- de los saldos finales del ejercicio anterior.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS apertura_ejercicio (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  ente_id UUID NOT NULL REFERENCES ente_publico(id) ON DELETE CASCADE,
+  ejercicio_origen_id UUID NOT NULL REFERENCES ejercicio_fiscal(id),
+  ejercicio_destino_id UUID NOT NULL REFERENCES ejercicio_fiscal(id),
+  fecha_apertura DATE NOT NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente','procesando','completado','error')),
+  poliza_apertura_id UUID REFERENCES poliza(id),
+  total_cuentas_transferidas INTEGER DEFAULT 0,
+  total_saldo_deudor NUMERIC(18,2) DEFAULT 0,
+  total_saldo_acreedor NUMERIC(18,2) DEFAULT 0,
+  ejecutado_por UUID REFERENCES usuarios(id),
+  observaciones TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_origen_id, ejercicio_destino_id)
+);
+
+-- ── Indices Batch 1 ──────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_conciliacion_ente ON conciliacion_contable_presupuestal(ente_id);
+CREATE INDEX IF NOT EXISTS idx_conciliacion_ejercicio ON conciliacion_contable_presupuestal(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_conciliacion_detalle_conciliacion ON conciliacion_detalle(conciliacion_id);
+CREATE INDEX IF NOT EXISTS idx_programa_presupuestario_ente ON programa_presupuestario(ente_id);
+CREATE INDEX IF NOT EXISTS idx_programa_presupuestario_ejercicio ON programa_presupuestario(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_indicador_mir_programa ON indicador_mir(programa_id);
+CREATE INDEX IF NOT EXISTS idx_avance_indicador_indicador ON avance_indicador(indicador_id);
+CREATE INDEX IF NOT EXISTS idx_indicador_postura_fiscal_ente ON indicador_postura_fiscal(ente_id);
+CREATE INDEX IF NOT EXISTS idx_indicador_postura_fiscal_ejercicio ON indicador_postura_fiscal(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_nota_estado_financiero_ente ON nota_estado_financiero(ente_id);
+CREATE INDEX IF NOT EXISTS idx_nota_estado_financiero_ejercicio ON nota_estado_financiero(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_apertura_ejercicio_ente ON apertura_ejercicio(ente_id);
+
+-- ── Triggers updated_at Batch 1 ─────────────────────────────────────
+
+CREATE TRIGGER trg_conciliacion_contable_presupuestal_updated_at
+  BEFORE UPDATE ON conciliacion_contable_presupuestal FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_programa_presupuestario_updated_at
+  BEFORE UPDATE ON programa_presupuestario FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_indicador_mir_updated_at
+  BEFORE UPDATE ON indicador_mir FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_indicador_postura_fiscal_updated_at
+  BEFORE UPDATE ON indicador_postura_fiscal FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_nota_estado_financiero_updated_at
+  BEFORE UPDATE ON nota_estado_financiero FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_apertura_ejercicio_updated_at
+  BEFORE UPDATE ON apertura_ejercicio FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+-- ── Triggers audit Batch 1 ──────────────────────────────────────────
+
+CREATE TRIGGER trg_audit_conciliacion_contable_presupuestal
+  AFTER INSERT OR UPDATE OR DELETE ON conciliacion_contable_presupuestal FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_conciliacion_detalle
+  AFTER INSERT OR UPDATE OR DELETE ON conciliacion_detalle FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_programa_presupuestario
+  AFTER INSERT OR UPDATE OR DELETE ON programa_presupuestario FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_indicador_mir
+  AFTER INSERT OR UPDATE OR DELETE ON indicador_mir FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_avance_indicador
+  AFTER INSERT OR UPDATE OR DELETE ON avance_indicador FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_indicador_postura_fiscal
+  AFTER INSERT OR UPDATE OR DELETE ON indicador_postura_fiscal FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_nota_estado_financiero
+  AFTER INSERT OR UPDATE OR DELETE ON nota_estado_financiero FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_apertura_ejercicio
+  AFTER INSERT OR UPDATE OR DELETE ON apertura_ejercicio FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- ── Row Level Security Batch 1 ──────────────────────────────────────
+
+ALTER TABLE conciliacion_contable_presupuestal ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conciliacion_detalle ENABLE ROW LEVEL SECURITY;
+ALTER TABLE programa_presupuestario ENABLE ROW LEVEL SECURITY;
+ALTER TABLE indicador_mir ENABLE ROW LEVEL SECURITY;
+ALTER TABLE avance_indicador ENABLE ROW LEVEL SECURITY;
+ALTER TABLE indicador_postura_fiscal ENABLE ROW LEVEL SECURITY;
+ALTER TABLE nota_estado_financiero ENABLE ROW LEVEL SECURITY;
+ALTER TABLE apertura_ejercicio ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY auth_full_access ON conciliacion_contable_presupuestal FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON conciliacion_detalle FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON programa_presupuestario FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON indicador_mir FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON avance_indicador FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON indicador_postura_fiscal FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON nota_estado_financiero FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON apertura_ejercicio FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- BATCH 2: Tesoreria + Conciliacion Bancaria
+-- ═══════════════════════════════════════════════════════════════════════
+
+-- ══════════════ Batch 2: Tesoreria + Conciliacion Bancaria ══════════════
+
+-- ---------------------------------------------
+-- B2.1 Cuenta Bancaria
+-- Registro maestro de cuentas bancarias del ente publico,
+-- con CLABE, banco, tipo, moneda y saldo actual.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS cuenta_bancaria (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ente_id UUID NOT NULL REFERENCES ente_publico(id),
+  numero_cuenta TEXT NOT NULL,
+  clabe TEXT,
+  banco TEXT NOT NULL,
+  tipo TEXT NOT NULL CHECK (tipo IN ('cheques','inversion','fideicomiso','otro')),
+  moneda TEXT NOT NULL DEFAULT 'MXN',
+  saldo_actual NUMERIC(18,2) NOT NULL DEFAULT 0,
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  responsable TEXT,
+  activo BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(ente_id, numero_cuenta)
+);
+
+-- ---------------------------------------------
+-- B2.2 Movimiento Bancario
+-- Cada operacion registrada en la cuenta bancaria:
+-- depositos, retiros, transferencias, comisiones, intereses.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS movimiento_bancario (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cuenta_bancaria_id UUID NOT NULL REFERENCES cuenta_bancaria(id) ON DELETE CASCADE,
+  periodo_id UUID REFERENCES periodo_contable(id),
+  fecha DATE NOT NULL,
+  referencia TEXT,
+  concepto TEXT,
+  tipo TEXT NOT NULL CHECK (tipo IN ('deposito','retiro','transferencia','comision','interes','otro')),
+  monto NUMERIC(18,2) NOT NULL,
+  saldo_despues NUMERIC(18,2),
+  poliza_id UUID REFERENCES poliza(id),
+  conciliado BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- B2.3 Cuenta por Cobrar
+-- Documentos de ingreso pendientes de cobro,
+-- con seguimiento de montos cobrados y saldo.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS cuenta_por_cobrar (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ente_id UUID NOT NULL REFERENCES ente_publico(id),
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id),
+  numero_documento TEXT,
+  deudor TEXT NOT NULL,
+  concepto TEXT,
+  monto_original NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_cobrado NUMERIC(18,2) NOT NULL DEFAULT 0,
+  saldo_pendiente NUMERIC(18,2) NOT NULL DEFAULT 0,
+  fecha_emision DATE,
+  fecha_vencimiento DATE,
+  estado TEXT NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente','parcial','cobrada','cancelada','vencida')),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  poliza_id UUID REFERENCES poliza(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- B2.4 Cuenta por Pagar
+-- Documentos de egreso pendientes de pago,
+-- con seguimiento de montos pagados y saldo.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS cuenta_por_pagar (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ente_id UUID NOT NULL REFERENCES ente_publico(id),
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id),
+  numero_documento TEXT,
+  acreedor TEXT NOT NULL,
+  concepto TEXT,
+  monto_original NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_pagado NUMERIC(18,2) NOT NULL DEFAULT 0,
+  saldo_pendiente NUMERIC(18,2) NOT NULL DEFAULT 0,
+  fecha_recepcion DATE,
+  fecha_vencimiento DATE,
+  estado TEXT NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente','parcial','pagada','cancelada','vencida')),
+  partida_egreso_id UUID REFERENCES partida_egreso(id),
+  cuenta_contable_id UUID REFERENCES plan_de_cuentas(id),
+  poliza_id UUID REFERENCES poliza(id),
+  proveedor_id UUID,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------
+-- B2.5 Flujo de Efectivo
+-- Registro de movimientos de efectivo clasificados
+-- por categoria (operacion, inversion, financiamiento).
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS flujo_efectivo (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ente_id UUID NOT NULL REFERENCES ente_publico(id),
+  ejercicio_id UUID NOT NULL REFERENCES ejercicio_fiscal(id),
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id),
+  categoria TEXT NOT NULL CHECK (categoria IN ('operacion','inversion','financiamiento')),
+  concepto TEXT NOT NULL,
+  monto_entrada NUMERIC(18,2) NOT NULL DEFAULT 0,
+  monto_salida NUMERIC(18,2) NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(ente_id, ejercicio_id, periodo_id, concepto)
+);
+
+-- ---------------------------------------------
+-- B2.6 Estado de Cuenta Bancario
+-- Resumen del estado de cuenta emitido por el banco
+-- para un periodo, con saldos inicial y final.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS estado_cuenta_bancario (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cuenta_bancaria_id UUID NOT NULL REFERENCES cuenta_bancaria(id) ON DELETE CASCADE,
+  periodo_id UUID NOT NULL REFERENCES periodo_contable(id),
+  fecha_corte DATE,
+  saldo_inicial_banco NUMERIC(18,2) NOT NULL DEFAULT 0,
+  saldo_final_banco NUMERIC(18,2) NOT NULL DEFAULT 0,
+  archivo_nombre TEXT,
+  estado TEXT NOT NULL DEFAULT 'importado' CHECK (estado IN ('importado','en_conciliacion','conciliado','aprobado')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(cuenta_bancaria_id, periodo_id)
+);
+
+-- ---------------------------------------------
+-- B2.7 Movimiento Estado de Cuenta
+-- Lineas individuales del estado de cuenta bancario,
+-- vinculables a movimientos bancarios para conciliacion.
+-- ---------------------------------------------
+CREATE TABLE IF NOT EXISTS movimiento_estado_cuenta (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  estado_cuenta_id UUID NOT NULL REFERENCES estado_cuenta_bancario(id) ON DELETE CASCADE,
+  fecha DATE NOT NULL,
+  referencia TEXT,
+  concepto TEXT,
+  cargo NUMERIC(18,2) NOT NULL DEFAULT 0,
+  abono NUMERIC(18,2) NOT NULL DEFAULT 0,
+  saldo NUMERIC(18,2),
+  movimiento_bancario_id UUID REFERENCES movimiento_bancario(id),
+  conciliado BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Indices Batch 2 ──────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_cuenta_bancaria_ente ON cuenta_bancaria(ente_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_bancaria_cuenta_contable ON cuenta_bancaria(cuenta_contable_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_bancaria_activo ON cuenta_bancaria(activo);
+
+CREATE INDEX IF NOT EXISTS idx_movimiento_bancario_cuenta ON movimiento_bancario(cuenta_bancaria_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_bancario_periodo ON movimiento_bancario(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_bancario_fecha ON movimiento_bancario(fecha);
+CREATE INDEX IF NOT EXISTS idx_movimiento_bancario_poliza ON movimiento_bancario(poliza_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_bancario_conciliado ON movimiento_bancario(conciliado);
+
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_cobrar_ente ON cuenta_por_cobrar(ente_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_cobrar_ejercicio ON cuenta_por_cobrar(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_cobrar_estado ON cuenta_por_cobrar(estado);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_cobrar_fecha_vencimiento ON cuenta_por_cobrar(fecha_vencimiento);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_cobrar_poliza ON cuenta_por_cobrar(poliza_id);
+
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_ente ON cuenta_por_pagar(ente_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_ejercicio ON cuenta_por_pagar(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_estado ON cuenta_por_pagar(estado);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_fecha_vencimiento ON cuenta_por_pagar(fecha_vencimiento);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_poliza ON cuenta_por_pagar(poliza_id);
+CREATE INDEX IF NOT EXISTS idx_cuenta_por_pagar_partida_egreso ON cuenta_por_pagar(partida_egreso_id);
+
+CREATE INDEX IF NOT EXISTS idx_flujo_efectivo_ente ON flujo_efectivo(ente_id);
+CREATE INDEX IF NOT EXISTS idx_flujo_efectivo_ejercicio ON flujo_efectivo(ejercicio_id);
+CREATE INDEX IF NOT EXISTS idx_flujo_efectivo_periodo ON flujo_efectivo(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_flujo_efectivo_categoria ON flujo_efectivo(categoria);
+
+CREATE INDEX IF NOT EXISTS idx_estado_cuenta_bancario_cuenta ON estado_cuenta_bancario(cuenta_bancaria_id);
+CREATE INDEX IF NOT EXISTS idx_estado_cuenta_bancario_periodo ON estado_cuenta_bancario(periodo_id);
+CREATE INDEX IF NOT EXISTS idx_estado_cuenta_bancario_estado ON estado_cuenta_bancario(estado);
+
+CREATE INDEX IF NOT EXISTS idx_movimiento_estado_cuenta_estado_cuenta ON movimiento_estado_cuenta(estado_cuenta_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_estado_cuenta_fecha ON movimiento_estado_cuenta(fecha);
+CREATE INDEX IF NOT EXISTS idx_movimiento_estado_cuenta_mov_bancario ON movimiento_estado_cuenta(movimiento_bancario_id);
+CREATE INDEX IF NOT EXISTS idx_movimiento_estado_cuenta_conciliado ON movimiento_estado_cuenta(conciliado);
+
+-- ── Triggers updated_at Batch 2 ─────────────────────────────────────
+
+CREATE TRIGGER trg_cuenta_bancaria_updated_at
+  BEFORE UPDATE ON cuenta_bancaria FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_movimiento_bancario_updated_at
+  BEFORE UPDATE ON movimiento_bancario FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_cuenta_por_cobrar_updated_at
+  BEFORE UPDATE ON cuenta_por_cobrar FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_cuenta_por_pagar_updated_at
+  BEFORE UPDATE ON cuenta_por_pagar FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_flujo_efectivo_updated_at
+  BEFORE UPDATE ON flujo_efectivo FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_estado_cuenta_bancario_updated_at
+  BEFORE UPDATE ON estado_cuenta_bancario FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+CREATE TRIGGER trg_movimiento_estado_cuenta_updated_at
+  BEFORE UPDATE ON movimiento_estado_cuenta FOR EACH ROW EXECUTE FUNCTION fn_updated_at();
+
+-- ── Triggers audit Batch 2 ──────────────────────────────────────────
+
+CREATE TRIGGER trg_audit_cuenta_bancaria
+  AFTER INSERT OR UPDATE OR DELETE ON cuenta_bancaria FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_movimiento_bancario
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_bancario FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_cuenta_por_cobrar
+  AFTER INSERT OR UPDATE OR DELETE ON cuenta_por_cobrar FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_cuenta_por_pagar
+  AFTER INSERT OR UPDATE OR DELETE ON cuenta_por_pagar FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_flujo_efectivo
+  AFTER INSERT OR UPDATE OR DELETE ON flujo_efectivo FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_estado_cuenta_bancario
+  AFTER INSERT OR UPDATE OR DELETE ON estado_cuenta_bancario FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+CREATE TRIGGER trg_audit_movimiento_estado_cuenta
+  AFTER INSERT OR UPDATE OR DELETE ON movimiento_estado_cuenta FOR EACH ROW EXECUTE FUNCTION fn_audit_log();
+
+-- ── Row Level Security Batch 2 ──────────────────────────────────────
+
+ALTER TABLE cuenta_bancaria ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_bancario ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cuenta_por_cobrar ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cuenta_por_pagar ENABLE ROW LEVEL SECURITY;
+ALTER TABLE flujo_efectivo ENABLE ROW LEVEL SECURITY;
+ALTER TABLE estado_cuenta_bancario ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movimiento_estado_cuenta ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY auth_full_access ON cuenta_bancaria FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_bancario FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON cuenta_por_cobrar FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON cuenta_por_pagar FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON flujo_efectivo FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON estado_cuenta_bancario FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_full_access ON movimiento_estado_cuenta FOR ALL TO authenticated USING (true) WITH CHECK (true);

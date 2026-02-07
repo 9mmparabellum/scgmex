@@ -62,6 +62,58 @@ const Bitacora = lazy(() => import('./modules/seguridad/Bitacora'));
 const Usuarios = lazy(() => import('./modules/seguridad/Usuarios'));
 const Perfil = lazy(() => import('./modules/auth/Perfil'));
 
+// Batch 1: LGCG Compliance
+const ConciliacionList = lazy(() => import('./modules/conciliacion/ConciliacionList'));
+const ConciliacionDetalle = lazy(() => import('./modules/conciliacion/ConciliacionDetalle'));
+const Programas = lazy(() => import('./modules/mir/Programas'));
+const MIRDetalle = lazy(() => import('./modules/mir/MIRDetalle'));
+const AvanceIndicadores = lazy(() => import('./modules/mir/AvanceIndicadores'));
+const ReporteProgramatico = lazy(() => import('./modules/mir/ReporteProgramatico'));
+const IndicadoresFiscales = lazy(() => import('./modules/indicadores-fiscales/IndicadoresFiscales'));
+const NotasEF = lazy(() => import('./modules/notas/NotasEF'));
+const AperturaEjercicio = lazy(() => import('./modules/apertura/AperturaEjercicio'));
+
+// Batch 3: Adquisiciones + Nomina
+const AdquisicionesMain = lazy(() => import('./modules/adquisiciones/AdquisicionesMain'));
+const Proveedores = lazy(() => import('./modules/adquisiciones/Proveedores'));
+const Requisiciones = lazy(() => import('./modules/adquisiciones/Requisiciones'));
+const OrdenesCompra = lazy(() => import('./modules/adquisiciones/OrdenesCompra'));
+const NominaMain = lazy(() => import('./modules/nomina/NominaMain'));
+const Empleados = lazy(() => import('./modules/nomina/Empleados'));
+const Tabulador = lazy(() => import('./modules/nomina/Tabulador'));
+const ConceptosNomina = lazy(() => import('./modules/nomina/ConceptosNomina'));
+const NominaPeriodos = lazy(() => import('./modules/nomina/NominaPeriodos'));
+const NominaDetalle = lazy(() => import('./modules/nomina/NominaDetalle'));
+
+// Batch 4: Obra Publica + Recaudacion + Envio Obligaciones
+const ObraPublicaMain = lazy(() => import('./modules/obra-publica/ObraPublicaMain'));
+const ProyectosObra = lazy(() => import('./modules/obra-publica/ProyectosObra'));
+const ProyectoDetalle = lazy(() => import('./modules/obra-publica/ProyectoDetalle'));
+const RecaudacionMain = lazy(() => import('./modules/recaudacion/RecaudacionMain'));
+const Contribuyentes = lazy(() => import('./modules/recaudacion/Contribuyentes'));
+const Padron = lazy(() => import('./modules/recaudacion/Padron'));
+const Cobros = lazy(() => import('./modules/recaudacion/Cobros'));
+const EnvioObligaciones = lazy(() => import('./modules/obligaciones/EnvioObligaciones'));
+
+// Batch 5: Portal Ciudadano + CFDI + Dashboard RT + Benchmarking + Reportes Avanzados
+const PortalCiudadano = lazy(() => import('./modules/portal-ciudadano/PortalCiudadano'));
+const CFDIMain = lazy(() => import('./modules/cfdi/CFDIMain'));
+const CFDIEmitidos = lazy(() => import('./modules/cfdi/CFDIEmitidos'));
+const CFDIRecibidos = lazy(() => import('./modules/cfdi/CFDIRecibidos'));
+const DashboardRealtime = lazy(() => import('./modules/dashboard-realtime/DashboardRealtime'));
+const Benchmarking = lazy(() => import('./modules/benchmarking/Benchmarking'));
+const ReportesAvanzados = lazy(() => import('./modules/reportes-avanzados/ReportesAvanzados'));
+
+// Batch 2: Tesoreria + Conciliacion Bancaria
+const TesoreriaMain = lazy(() => import('./modules/tesoreria/TesoreriaMain'));
+const CuentasBancarias = lazy(() => import('./modules/tesoreria/CuentasBancarias'));
+const MovimientosBancarios = lazy(() => import('./modules/tesoreria/MovimientosBancarios'));
+const CuentasPorCobrar = lazy(() => import('./modules/tesoreria/CuentasPorCobrar'));
+const CuentasPorPagar = lazy(() => import('./modules/tesoreria/CuentasPorPagar'));
+const FlujoEfectivo = lazy(() => import('./modules/tesoreria/FlujoEfectivo'));
+const ConciliacionBancaria = lazy(() => import('./modules/conciliacion-bancaria/ConciliacionBancaria'));
+const ConciliacionBancariaDetalle = lazy(() => import('./modules/conciliacion-bancaria/ConciliacionBancariaDetalle'));
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
@@ -145,6 +197,58 @@ export default function App() {
 
             {/* Perfil */}
             <Route path={ROUTES.PERFIL} element={<Perfil />} />
+
+            {/* Batch 1: LGCG Compliance */}
+            <Route path={ROUTES.CONCILIACION} element={<ConciliacionList />} />
+            <Route path={ROUTES.CONCILIACION_DETALLE} element={<ConciliacionDetalle />} />
+            <Route path={ROUTES.PROGRAMAS} element={<Programas />} />
+            <Route path={ROUTES.MIR_DETALLE} element={<MIRDetalle />} />
+            <Route path={ROUTES.AVANCE_INDICADORES} element={<AvanceIndicadores />} />
+            <Route path={ROUTES.REPORTE_PROGRAMATICO} element={<ReporteProgramatico />} />
+            <Route path={ROUTES.INDICADORES_FISCALES} element={<IndicadoresFiscales />} />
+            <Route path={ROUTES.NOTAS_EF} element={<NotasEF />} />
+            <Route path={ROUTES.APERTURA} element={<AperturaEjercicio />} />
+
+            {/* Batch 3: Adquisiciones + Nomina */}
+            <Route path={ROUTES.ADQUISICIONES} element={<AdquisicionesMain />} />
+            <Route path={ROUTES.PROVEEDORES} element={<Proveedores />} />
+            <Route path={ROUTES.REQUISICIONES} element={<Requisiciones />} />
+            <Route path={ROUTES.ORDENES_COMPRA} element={<OrdenesCompra />} />
+            <Route path={ROUTES.NOMINA} element={<NominaMain />} />
+            <Route path={ROUTES.EMPLEADOS} element={<Empleados />} />
+            <Route path={ROUTES.TABULADOR} element={<Tabulador />} />
+            <Route path={ROUTES.CONCEPTOS_NOMINA} element={<ConceptosNomina />} />
+            <Route path={ROUTES.NOMINA_PERIODOS} element={<NominaPeriodos />} />
+            <Route path={ROUTES.NOMINA_DETALLE} element={<NominaDetalle />} />
+
+            {/* Batch 4: Obra Publica + Recaudacion + Envio Obligaciones */}
+            <Route path={ROUTES.OBRA_PUBLICA} element={<ObraPublicaMain />} />
+            <Route path={ROUTES.PROYECTOS_OBRA} element={<ProyectosObra />} />
+            <Route path={ROUTES.PROYECTO_DETALLE} element={<ProyectoDetalle />} />
+            <Route path={ROUTES.RECAUDACION} element={<RecaudacionMain />} />
+            <Route path={ROUTES.CONTRIBUYENTES} element={<Contribuyentes />} />
+            <Route path={ROUTES.PADRON} element={<Padron />} />
+            <Route path={ROUTES.COBROS} element={<Cobros />} />
+            <Route path={ROUTES.OBLIGACIONES} element={<EnvioObligaciones />} />
+
+            {/* Batch 5: Portal Ciudadano + CFDI + Dashboard RT + Benchmarking + Reportes Avanzados */}
+            <Route path={ROUTES.PORTAL_CIUDADANO} element={<PortalCiudadano />} />
+            <Route path={ROUTES.CFDI} element={<CFDIMain />} />
+            <Route path={ROUTES.CFDI_EMITIDOS} element={<CFDIEmitidos />} />
+            <Route path={ROUTES.CFDI_RECIBIDOS} element={<CFDIRecibidos />} />
+            <Route path={ROUTES.DASHBOARD_REALTIME} element={<DashboardRealtime />} />
+            <Route path={ROUTES.BENCHMARKING} element={<Benchmarking />} />
+            <Route path={ROUTES.REPORTES_AVANZADOS} element={<ReportesAvanzados />} />
+
+            {/* Batch 2: Tesoreria + Conciliacion Bancaria */}
+            <Route path={ROUTES.TESORERIA} element={<TesoreriaMain />} />
+            <Route path={ROUTES.CUENTAS_BANCARIAS} element={<CuentasBancarias />} />
+            <Route path={ROUTES.MOVIMIENTOS_BANCARIOS} element={<MovimientosBancarios />} />
+            <Route path={ROUTES.CUENTAS_POR_COBRAR} element={<CuentasPorCobrar />} />
+            <Route path={ROUTES.CUENTAS_POR_PAGAR} element={<CuentasPorPagar />} />
+            <Route path={ROUTES.FLUJO_EFECTIVO} element={<FlujoEfectivo />} />
+            <Route path={ROUTES.CONCILIACION_BANCARIA} element={<ConciliacionBancaria />} />
+            <Route path={ROUTES.CONCILIACION_BANCARIA_DETALLE} element={<ConciliacionBancariaDetalle />} />
 
             {/* Redirect root to dashboard */}
             <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

@@ -48,4 +48,63 @@ export const ROUTES = {
   BITACORA: '/seguridad/bitacora',
   USUARIOS: '/seguridad/usuarios',
   PERFIL: '/perfil',
+  // Conciliacion Contable-Presupuestal
+  CONCILIACION: '/contabilidad/conciliacion',
+  CONCILIACION_DETALLE: '/contabilidad/conciliacion/:id',
+  // MIR / PbR
+  PROGRAMAS: '/mir/programas',
+  MIR_DETALLE: '/mir/:programaId',
+  AVANCE_INDICADORES: '/mir/avances',
+  REPORTE_PROGRAMATICO: '/mir/reporte',
+  // Indicadores de Postura Fiscal
+  INDICADORES_FISCALES: '/indicadores-fiscales',
+  // Notas a los Estados Financieros
+  NOTAS_EF: '/reportes/notas',
+  // Apertura del Ejercicio
+  APERTURA: '/configuracion/apertura',
+  // Tesoreria
+  TESORERIA: '/tesoreria',
+  CUENTAS_BANCARIAS: '/tesoreria/bancos',
+  MOVIMIENTOS_BANCARIOS: '/tesoreria/movimientos',
+  CUENTAS_POR_COBRAR: '/tesoreria/cxc',
+  CUENTAS_POR_PAGAR: '/tesoreria/cxp',
+  FLUJO_EFECTIVO: '/tesoreria/flujo',
+  // Conciliacion Bancaria
+  CONCILIACION_BANCARIA: '/tesoreria/conciliacion-bancaria',
+  CONCILIACION_BANCARIA_DETALLE: '/tesoreria/conciliacion-bancaria/:id',
+  // Adquisiciones
+  ADQUISICIONES: '/adquisiciones',
+  PROVEEDORES: '/adquisiciones/proveedores',
+  REQUISICIONES: '/adquisiciones/requisiciones',
+  ORDENES_COMPRA: '/adquisiciones/ordenes',
+  // Nomina
+  NOMINA: '/nomina',
+  EMPLEADOS: '/nomina/empleados',
+  TABULADOR: '/nomina/tabulador',
+  CONCEPTOS_NOMINA: '/nomina/conceptos',
+  NOMINA_PERIODOS: '/nomina/periodos',
+  NOMINA_DETALLE: '/nomina/periodos/:id',
+  // Obra Publica
+  OBRA_PUBLICA: '/obra-publica',
+  PROYECTOS_OBRA: '/obra-publica/proyectos',
+  PROYECTO_DETALLE: '/obra-publica/proyectos/:id',
+  // Recaudacion
+  RECAUDACION: '/recaudacion',
+  CONTRIBUYENTES: '/recaudacion/contribuyentes',
+  PADRON: '/recaudacion/padron',
+  COBROS: '/recaudacion/cobros',
+  // Envio Obligaciones
+  OBLIGACIONES: '/obligaciones',
+  // Portal Ciudadano
+  PORTAL_CIUDADANO: '/portal-ciudadano',
+  // CFDI
+  CFDI: '/cfdi',
+  CFDI_EMITIDOS: '/cfdi/emitidos',
+  CFDI_RECIBIDOS: '/cfdi/recibidos',
+  // Dashboard Realtime
+  DASHBOARD_REALTIME: '/dashboard-realtime',
+  // Benchmarking
+  BENCHMARKING: '/benchmarking',
+  // Reportes Avanzados
+  REPORTES_AVANZADOS: '/reportes-avanzados',
 };
