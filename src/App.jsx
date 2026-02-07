@@ -72,6 +72,7 @@ const ReporteProgramatico = lazy(() => import('./modules/mir/ReporteProgramatico
 const IndicadoresFiscales = lazy(() => import('./modules/indicadores-fiscales/IndicadoresFiscales'));
 const NotasEF = lazy(() => import('./modules/notas/NotasEF'));
 const AperturaEjercicio = lazy(() => import('./modules/apertura/AperturaEjercicio'));
+const CargaDatos = lazy(() => import('./modules/configuracion/CargaDatos'));
 
 // Batch 3: Adquisiciones + Nomina
 const AdquisicionesMain = lazy(() => import('./modules/adquisiciones/AdquisicionesMain'));
@@ -219,6 +220,7 @@ export default function App() {
             <Route path={ROUTES.INDICADORES_FISCALES} element={<IndicadoresFiscales />} />
             <Route path={ROUTES.NOTAS_EF} element={<NotasEF />} />
             <Route path={ROUTES.APERTURA} element={<AperturaEjercicio />} />
+            <Route path={ROUTES.CARGA_DATOS} element={<CargaDatos />} />
 
             {/* Batch 3: Adquisiciones + Nomina */}
             <Route path={ROUTES.ADQUISICIONES} element={<AdquisicionesMain />} />

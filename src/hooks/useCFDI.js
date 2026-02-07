@@ -1,9 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '../stores/appStore';
 import {
   fetchCFDIEmitidos,
   fetchCFDIRecibidos,
   fetchResumenCFDI,
+  timbrarCFDIEmitido,
+  cancelarCFDIEmitido,
+  descargarCFDIXML,
+  descargarCFDIPDF,
+  validarCFDIRecibido,
+  verificarConexionPAC,
 } from '../services/cfdiService';
 
 export function useCFDIEmitidos() {
@@ -30,5 +36,62 @@ export function useResumenCFDI() {
     queryKey: ['resumen_cfdi', entePublico?.id, ejercicioFiscal?.id],
     queryFn: () => fetchResumenCFDI(entePublico.id, ejercicioFiscal.id),
     enabled: !!entePublico?.id && !!ejercicioFiscal?.id,
+  });
+}
+
+// ── PAC Mutation Hooks ──
+
+export function useTimbrarCFDI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cfdiId, formData, emisor }) =>
+      timbrarCFDIEmitido(cfdiId, formData, emisor),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cfdi_emitidos'] });
+      qc.invalidateQueries({ queryKey: ['resumen_cfdi'] });
+    },
+  });
+}
+
+export function useCancelarCFDI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cfdiId, motivo, uuidSustitucion }) =>
+      cancelarCFDIEmitido(cfdiId, motivo, uuidSustitucion),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cfdi_emitidos'] });
+      qc.invalidateQueries({ queryKey: ['resumen_cfdi'] });
+    },
+  });
+}
+
+export function useDescargarXML() {
+  return useMutation({
+    mutationFn: (cfdiId) => descargarCFDIXML(cfdiId),
+  });
+}
+
+export function useDescargarPDF() {
+  return useMutation({
+    mutationFn: (cfdiId) => descargarCFDIPDF(cfdiId),
+  });
+}
+
+export function useValidarCFDI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (cfdiId) => validarCFDIRecibido(cfdiId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cfdi_recibidos'] });
+    },
+  });
+}
+
+export function useConexionPAC() {
+  return useQuery({
+    queryKey: ['pac_status'],
+    queryFn: verificarConexionPAC,
+    staleTime: 60000,
+    retry: false,
   });
 }

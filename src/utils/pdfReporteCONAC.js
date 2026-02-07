@@ -8,6 +8,13 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  addSignatureBlock,
+  addDigitalSignature,
+  setPDFMetadata,
+  generatePDFHash,
+  addHashFooter,
+} from './pdfSigner';
 
 // ── Constantes ──────────────────────────────────────────────────────────────
 
@@ -49,15 +56,26 @@ function fechaReporte(periodo, ejercicio) {
  * Generate an official CONAC-format PDF from structured report data.
  *
  * @param {Object} reporte  - Output from reportesCONAC.js generarReporte()
- * @param {Object} options  - { ente, ejercicio, periodo, nivelGobierno }
+ * @param {Object} options  - { ente, ejercicio, periodo, nivelGobierno,
+ *                              elaboro, reviso, autorizo,
+ *                              selloDigital, cadenaOriginal, timestamp }
  */
-export function generarPdfCONAC(reporte, options = {}) {
+export async function generarPdfCONAC(reporte, options = {}) {
   const { ente, ejercicio, periodo, nivelGobierno } = options;
   const orientation = reporte.orientacion === 'landscape' ? 'landscape' : 'portrait';
   const doc = new jsPDF(orientation, 'mm', 'letter');
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
+
+  // ── PDF Metadata ──────────────────────────────────────────────────────
+  const enteLabel = ente?.nombre || ente?.razon_social || 'Ente Publico';
+  setPDFMetadata(doc, {
+    title: `${reporte.titulo} - ${enteLabel}`,
+    subject: reporte.titulo,
+    author: enteLabel,
+    keywords: `CONAC, LGCG, contabilidad gubernamental, ${reporte.titulo}`,
+  });
 
   // ── Header ──────────────────────────────────────────────────────────────
 
@@ -259,24 +277,71 @@ export function generarPdfCONAC(reporte, options = {}) {
   // ── Protesta footer ─────────────────────────────────────────────────────
 
   const finalY = doc.lastAutoTable?.finalY || (pageHeight - 30);
-  const protestaY = finalY + 8;
+  let cursorAfterTable = finalY + 8;
 
-  if (protestaY < pageHeight - 25) {
+  if (cursorAfterTable < pageHeight - 25) {
     doc.setFontSize(6.5);
     doc.setFont(undefined, 'italic');
     doc.setTextColor(120, 120, 120);
     const lines = doc.splitTextToSize(PROTESTA, availableWidth);
-    doc.text(lines, margin, protestaY);
+    doc.text(lines, margin, cursorAfterTable);
+    cursorAfterTable += lines.length * 3.5 + 2;
   }
 
   // ── Notes ─────────────────────────────────────────────────────────────
 
-  if (reporte.notas && protestaY + 10 < pageHeight - 20) {
+  if (reporte.notas && cursorAfterTable < pageHeight - 20) {
     doc.setFontSize(6.5);
     doc.setFont(undefined, 'normal');
     doc.setTextColor(100, 100, 100);
     const noteLines = doc.splitTextToSize(`Nota: ${reporte.notas}`, availableWidth);
-    doc.text(noteLines, margin, protestaY + (reporte.notas ? 8 : 0));
+    doc.text(noteLines, margin, cursorAfterTable);
+    cursorAfterTable += noteLines.length * 3.5 + 2;
+  }
+
+  // ── Signature Block ───────────────────────────────────────────────────
+
+  const hasSignatures = options.elaboro || options.reviso || options.autorizo;
+  if (hasSignatures) {
+    // If not enough room on current page, add a new page
+    if (cursorAfterTable + 45 > pageHeight - 25) {
+      doc.addPage();
+      cursorAfterTable = margin + 10;
+    }
+    addSignatureBlock(
+      doc,
+      {
+        elaboro: options.elaboro,
+        reviso: options.reviso,
+        autorizo: options.autorizo,
+      },
+      cursorAfterTable + 5,
+    );
+  }
+
+  // ── Digital Signature / Sello Digital ─────────────────────────────────
+
+  const hasSello = options.selloDigital || options.cadenaOriginal || options.timestamp;
+  if (hasSello) {
+    addDigitalSignature(doc, {
+      selloDigital: options.selloDigital,
+      cadenaOriginal: options.cadenaOriginal,
+      timestamp: options.timestamp,
+    });
+  }
+
+  // ── Integrity Hash ────────────────────────────────────────────────────
+  // The hash is computed over the full PDF content (after all drawing is
+  // done) and then appended as a tiny footer on the last page.  Note that
+  // because the hash itself alters the PDF, the embedded value is a
+  // reference hash of the pre-hash document — which is the standard
+  // approach for self-contained integrity markers.
+
+  try {
+    const hash = await generatePDFHash(doc);
+    addHashFooter(doc, hash);
+  } catch (_) {
+    // crypto.subtle may not be available in all environments; skip silently
   }
 
   // ── Download ──────────────────────────────────────────────────────────
@@ -295,11 +360,11 @@ export function generarPdfCONAC(reporte, options = {}) {
  * @param {Object} data - Data payload
  * @param {Object} options - { ente, ejercicio, periodo, nivelGobierno }
  */
-export function generarTodosPdfCONAC(reportKeys, generarReporte, data, options) {
+export async function generarTodosPdfCONAC(reportKeys, generarReporte, data, options) {
   for (const key of reportKeys) {
     try {
       const reporte = generarReporte(key, data, options.ente, options.periodo, options.ejercicio);
-      generarPdfCONAC(reporte, options);
+      await generarPdfCONAC(reporte, options);
     } catch (err) {
       console.warn(`No se pudo generar PDF para ${key}:`, err.message);
     }

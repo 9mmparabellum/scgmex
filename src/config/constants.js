@@ -431,7 +431,9 @@ export const TIPOS_CFDI = {
 };
 
 export const ESTADOS_CFDI = {
+  borrador: { label: 'Borrador', variant: 'default' },
   vigente: { label: 'Vigente', variant: 'success' },
+  timbrado: { label: 'Timbrado', variant: 'success' },
   cancelado: { label: 'Cancelado', variant: 'danger' },
   pendiente: { label: 'Pendiente', variant: 'warning' },
 };

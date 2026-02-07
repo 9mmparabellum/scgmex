@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
-import { useCFDIRecibidos } from '../../hooks/useCFDI';
+import { useCFDIRecibidos, useValidarCFDI } from '../../hooks/useCFDI';
 import { canEdit } from '../../utils/rbac';
 import { TIPOS_CFDI, ESTADOS_CFDI, USOS_CFDI, METODOS_PAGO_CFDI } from '../../config/constants';
 import DataTable from '../../components/ui/DataTable';
@@ -47,12 +47,17 @@ export default function CFDIRecibidos() {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
 
+  // --- Validacion state ---
+  const [validarError, setValidarError] = useState('');
+  const [validarSuccess, setValidarSuccess] = useState('');
+
   // --- Data hooks ---
   const { data: cfdiRecibidos = [], isLoading } = useCFDIRecibidos();
 
   const createMut = useCreate('cfdi_recibido');
   const updateMut = useUpdate('cfdi_recibido');
   const removeMut = useRemove('cfdi_recibido');
+  const validarMut = useValidarCFDI();
 
   // --- Select options ---
   const tipoOptions = useMemo(
@@ -175,6 +180,22 @@ export default function CFDIRecibidos() {
     setToDelete(null);
   };
 
+  // --- Validar SAT handler ---
+  const handleValidarSAT = useCallback(async (row) => {
+    setValidarError('');
+    setValidarSuccess('');
+    try {
+      const resultado = await validarMut.mutateAsync(row.id);
+      const estado = resultado?.Estado || resultado?.status || 'Consultado';
+      setValidarSuccess(`CFDI ${row.uuid?.slice(0, 8) || ''}... validado ante SAT. Estado: ${estado}`);
+      // Auto-clear success message after 5 seconds
+      setTimeout(() => setValidarSuccess(''), 5000);
+    } catch (err) {
+      setValidarError(err.message || 'Error al validar el CFDI ante el SAT.');
+      setTimeout(() => setValidarError(''), 5000);
+    }
+  }, [validarMut]);
+
   // --- Export handler ---
   const handleExport = () => {
     const excelCols = [
@@ -189,6 +210,9 @@ export default function CFDIRecibidos() {
       { key: 'iva', label: 'IVA', getValue: (row) => Number(row.iva || 0) },
       { key: 'total', label: 'Total', getValue: (row) => Number(row.total || 0) },
       { key: 'estado', label: 'Estado', getValue: (row) => ESTADOS_CFDI[row.estado]?.label || row.estado },
+      { key: 'validado_sat', label: 'Validado SAT', getValue: (row) => row.validado_sat ? 'Si' : 'No' },
+      { key: 'estado_sat', label: 'Estado SAT' },
+      { key: 'fecha_validacion', label: 'Fecha Validacion' },
       { key: 'fecha_pago', label: 'Fecha Pago' },
       { key: 'notas', label: 'Notas' },
     ];
@@ -249,9 +273,27 @@ export default function CFDIRecibidos() {
         },
       },
       {
+        key: 'validado_sat',
+        label: 'SAT',
+        width: '100px',
+        render: (val, row) => {
+          if (val) {
+            return (
+              <div className="flex flex-col items-start gap-0.5">
+                <Badge variant="success">Validado</Badge>
+                {row.estado_sat && (
+                  <span className="text-[10px] text-text-muted">{row.estado_sat}</span>
+                )}
+              </div>
+            );
+          }
+          return <Badge variant="default">Pendiente</Badge>;
+        },
+      },
+      {
         key: 'id',
         label: 'Acciones',
-        width: '140px',
+        width: '180px',
         sortable: false,
         render: (_val, row) => (
           <div className="flex items-center gap-2">
@@ -261,6 +303,20 @@ export default function CFDIRecibidos() {
             >
               Editar
             </button>
+            {row.uuid && !row.validado_sat && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleValidarSAT(row); }}
+                className="text-xs text-[#56ca00] hover:text-[#56ca00]/80 transition-colors cursor-pointer font-medium"
+                disabled={validarMut.isPending}
+              >
+                {validarMut.isPending ? 'Validando...' : 'Validar SAT'}
+              </button>
+            )}
+            {row.validado_sat && row.fecha_validacion && (
+              <span className="text-[10px] text-text-muted" title={`Validado el ${row.fecha_validacion}`}>
+                {row.fecha_validacion?.slice(0, 10)}
+              </span>
+            )}
             {editable && (
               <button
                 onClick={(e) => { e.stopPropagation(); askDelete(row); }}
@@ -273,7 +329,7 @@ export default function CFDIRecibidos() {
         ),
       },
     ],
-    [editable]
+    [editable, handleValidarSAT, validarMut.isPending]
   );
 
   const isSaving = createMut.isPending || updateMut.isPending;
@@ -287,6 +343,18 @@ export default function CFDIRecibidos() {
           Comprobantes fiscales digitales recibidos de proveedores y terceros
         </p>
       </div>
+
+      {/* Validation feedback messages */}
+      {validarSuccess && (
+        <div className="bg-[#71dd37]/10 border border-[#71dd37]/30 rounded-lg p-3 mb-4">
+          <p className="text-sm text-[#56ca00] font-medium">{validarSuccess}</p>
+        </div>
+      )}
+      {validarError && (
+        <div className="bg-[#ff3e1d]/10 border border-[#ff3e1d]/30 rounded-lg p-3 mb-4">
+          <p className="text-sm text-[#e0360a] font-medium">{validarError}</p>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4">

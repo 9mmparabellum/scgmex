@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
-import { useCFDIEmitidos } from '../../hooks/useCFDI';
+import { useCFDIEmitidos, useTimbrarCFDI, useCancelarCFDI, useDescargarXML, useDescargarPDF } from '../../hooks/useCFDI';
 import { canEdit } from '../../utils/rbac';
 import { TIPOS_CFDI, ESTADOS_CFDI, USOS_CFDI, METODOS_PAGO_CFDI } from '../../config/constants';
+import { FORMAS_PAGO_CFDI40, MONEDAS, REGIMENES_FISCALES, MOTIVOS_CANCELACION } from '../../config/facturama';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -25,15 +26,54 @@ const emptyForm = {
   fecha_emision: today(),
   receptor_rfc: '',
   receptor_nombre: '',
+  receptor_regimen: '616',
+  receptor_cp: '',
   uso_cfdi: 'G03',
   tipo: 'ingreso',
   metodo_pago: 'PUE',
+  forma_pago: '99',
+  moneda: 'MXN',
+  descripcion: '',
   subtotal: '',
   iva: '',
   total: '',
-  estado: 'vigente',
+  estado: 'borrador',
   notas: '',
 };
+
+// Helper: download base64 content as file
+function downloadBase64(base64Content, filename, mimeType) {
+  try {
+    // Remove potential data URI prefix
+    const cleanBase64 = base64Content.replace(/^data:[^;]+;base64,/, '').replace(/"/g, '');
+    const byteChars = atob(cleanBase64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) {
+      byteNumbers[i] = byteChars.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch {
+    // Fallback: plain text download
+    const blob = new Blob([base64Content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+}
 
 export default function CFDIEmitidos() {
   const { entePublico, ejercicioFiscal, rol } = useAppStore();
@@ -48,12 +88,28 @@ export default function CFDIEmitidos() {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
 
+  // --- Timbrado state ---
+  const [timbradoConfirmOpen, setTimbradoConfirmOpen] = useState(false);
+  const [toTimbrar, setToTimbrar] = useState(null);
+  const [timbradoError, setTimbradoError] = useState('');
+
+  // --- Cancelacion state ---
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [toCancelar, setToCancelar] = useState(null);
+  const [cancelMotivo, setCancelMotivo] = useState('02');
+  const [cancelUuidSust, setCancelUuidSust] = useState('');
+  const [cancelError, setCancelError] = useState('');
+
   // --- Data hooks ---
   const { data: cfdiEmitidos = [], isLoading } = useCFDIEmitidos();
 
   const createMut = useCreate('cfdi_emitido');
   const updateMut = useUpdate('cfdi_emitido');
   const removeMut = useRemove('cfdi_emitido');
+  const timbrarMut = useTimbrarCFDI();
+  const cancelarMut = useCancelarCFDI();
+  const descargarXMLMut = useDescargarXML();
+  const descargarPDFMut = useDescargarPDF();
 
   // --- Select options ---
   const tipoOptions = useMemo(
@@ -73,6 +129,26 @@ export default function CFDIEmitidos() {
 
   const metodoPagoOptions = useMemo(
     () => Object.entries(METODOS_PAGO_CFDI).map(([value, label]) => ({ value, label: `${value} - ${label}` })),
+    []
+  );
+
+  const formaPagoOptions = useMemo(
+    () => FORMAS_PAGO_CFDI40.map((fp) => ({ value: fp.key, label: `${fp.key} - ${fp.label}` })),
+    []
+  );
+
+  const monedaOptions = useMemo(
+    () => MONEDAS.map((m) => ({ value: m.key, label: `${m.key} - ${m.label}` })),
+    []
+  );
+
+  const regimenOptions = useMemo(
+    () => REGIMENES_FISCALES.map((r) => ({ value: r.key, label: `${r.key} - ${r.label}` })),
+    []
+  );
+
+  const motivoCancelOptions = useMemo(
+    () => MOTIVOS_CANCELACION.map((m) => ({ value: m.key, label: `${m.key} - ${m.label}` })),
     []
   );
 
@@ -133,13 +209,18 @@ export default function CFDIEmitidos() {
       fecha_emision: row.fecha_emision ?? today(),
       receptor_rfc: row.receptor_rfc ?? '',
       receptor_nombre: row.receptor_nombre ?? '',
+      receptor_regimen: row.receptor_regimen ?? '616',
+      receptor_cp: row.receptor_cp ?? '',
       uso_cfdi: row.uso_cfdi ?? 'G03',
       tipo: row.tipo ?? 'ingreso',
       metodo_pago: row.metodo_pago ?? 'PUE',
+      forma_pago: row.forma_pago ?? '99',
+      moneda: row.moneda ?? 'MXN',
+      descripcion: row.descripcion ?? '',
       subtotal: row.subtotal ?? '',
       iva: row.iva ?? '',
       total: row.total ?? '',
-      estado: row.estado ?? 'vigente',
+      estado: row.estado ?? 'borrador',
       notas: row.notas ?? '',
     });
     setModalOpen(true);
@@ -176,6 +257,80 @@ export default function CFDIEmitidos() {
     setToDelete(null);
   };
 
+  // --- Timbrado handlers ---
+  const askTimbrar = useCallback((row) => {
+    setToTimbrar(row);
+    setTimbradoError('');
+    setTimbradoConfirmOpen(true);
+  }, []);
+
+  const confirmTimbrar = async () => {
+    if (!toTimbrar) return;
+    setTimbradoError('');
+    try {
+      const emisor = {
+        rfc: entePublico?.rfc || '',
+        nombre: entePublico?.nombre || '',
+        codigo_postal: entePublico?.codigo_postal || '06600',
+      };
+      await timbrarMut.mutateAsync({
+        cfdiId: toTimbrar.id,
+        formData: toTimbrar,
+        emisor,
+      });
+      setTimbradoConfirmOpen(false);
+      setToTimbrar(null);
+    } catch (err) {
+      setTimbradoError(err.message || 'Error al timbrar el CFDI.');
+    }
+  };
+
+  // --- Cancelacion handlers ---
+  const askCancelar = useCallback((row) => {
+    setToCancelar(row);
+    setCancelMotivo('02');
+    setCancelUuidSust('');
+    setCancelError('');
+    setCancelModalOpen(true);
+  }, []);
+
+  const confirmCancelar = async () => {
+    if (!toCancelar) return;
+    setCancelError('');
+    try {
+      await cancelarMut.mutateAsync({
+        cfdiId: toCancelar.id,
+        motivo: cancelMotivo,
+        uuidSustitucion: cancelMotivo === '01' ? cancelUuidSust : '',
+      });
+      setCancelModalOpen(false);
+      setToCancelar(null);
+    } catch (err) {
+      setCancelError(err.message || 'Error al cancelar el CFDI.');
+    }
+  };
+
+  // --- Download handlers ---
+  const handleDescargarXML = useCallback(async (row) => {
+    try {
+      const xml = await descargarXMLMut.mutateAsync(row.id);
+      const filename = `CFDI_${row.serie || ''}${row.folio || ''}_${row.uuid?.slice(0, 8) || 'sin-uuid'}.xml`;
+      downloadBase64(xml, filename, 'application/xml');
+    } catch {
+      // Error handled by React Query
+    }
+  }, [descargarXMLMut]);
+
+  const handleDescargarPDF = useCallback(async (row) => {
+    try {
+      const pdf = await descargarPDFMut.mutateAsync(row.id);
+      const filename = `CFDI_${row.serie || ''}${row.folio || ''}_${row.uuid?.slice(0, 8) || 'sin-uuid'}.pdf`;
+      downloadBase64(pdf, filename, 'application/pdf');
+    } catch {
+      // Error handled by React Query
+    }
+  }, [descargarPDFMut]);
+
   // --- Export handler ---
   const handleExport = () => {
     const excelCols = [
@@ -188,6 +343,8 @@ export default function CFDIEmitidos() {
       { key: 'uso_cfdi', label: 'Uso CFDI', getValue: (row) => USOS_CFDI[row.uso_cfdi] || row.uso_cfdi },
       { key: 'tipo', label: 'Tipo', getValue: (row) => TIPOS_CFDI[row.tipo] || row.tipo },
       { key: 'metodo_pago', label: 'Metodo Pago', getValue: (row) => METODOS_PAGO_CFDI[row.metodo_pago] || row.metodo_pago },
+      { key: 'forma_pago', label: 'Forma Pago' },
+      { key: 'moneda', label: 'Moneda' },
       { key: 'subtotal', label: 'Subtotal', getValue: (row) => Number(row.subtotal || 0) },
       { key: 'iva', label: 'IVA', getValue: (row) => Number(row.iva || 0) },
       { key: 'total', label: 'Total', getValue: (row) => Number(row.total || 0) },
@@ -195,6 +352,12 @@ export default function CFDIEmitidos() {
       { key: 'notas', label: 'Notas' },
     ];
     exportToExcel(filteredData, excelCols, 'cfdi_emitidos');
+  };
+
+  // --- Status badge with timbrado/borrador support ---
+  const getEstadoBadge = (estado) => {
+    const est = ESTADOS_CFDI[estado] || { label: estado, variant: 'default' };
+    return <Badge variant={est.variant}>{est.label}</Badge>;
   };
 
   // --- Table columns ---
@@ -251,37 +414,72 @@ export default function CFDIEmitidos() {
         key: 'estado',
         label: 'Estado',
         width: '120px',
-        render: (val) => {
-          const est = ESTADOS_CFDI[val] || { label: val, variant: 'default' };
-          return <Badge variant={est.variant}>{est.label}</Badge>;
-        },
+        render: (val) => getEstadoBadge(val),
       },
       {
         key: 'id',
         label: 'Acciones',
-        width: '140px',
+        width: '260px',
         sortable: false,
-        render: (_val, row) => (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); openEdit(row); }}
-              className="text-xs text-primary hover:text-primary-light transition-colors cursor-pointer"
-            >
-              Editar
-            </button>
-            {editable && (
+        render: (_val, row) => {
+          const isTimbrado = row.estado === 'timbrado';
+          const isCancelado = row.estado === 'cancelado';
+          const canTimbrar = !isTimbrado && !isCancelado;
+
+          return (
+            <div className="flex items-center gap-1.5 flex-wrap">
               <button
-                onClick={(e) => { e.stopPropagation(); askDelete(row); }}
-                className="text-xs text-danger hover:text-danger/80 transition-colors cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); openEdit(row); }}
+                className="text-xs text-primary hover:text-primary-light transition-colors cursor-pointer"
               >
-                Eliminar
+                Editar
               </button>
-            )}
-          </div>
-        ),
+              {editable && canTimbrar && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); askTimbrar(row); }}
+                  className="text-xs text-[#56ca00] hover:text-[#56ca00]/80 transition-colors cursor-pointer font-medium"
+                >
+                  Timbrar
+                </button>
+              )}
+              {editable && isTimbrado && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); askCancelar(row); }}
+                    className="text-xs text-danger hover:text-danger/80 transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDescargarXML(row); }}
+                    className="text-xs text-[#03a9ce] hover:text-[#03a9ce]/80 transition-colors cursor-pointer"
+                    disabled={descargarXMLMut.isPending}
+                  >
+                    XML
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDescargarPDF(row); }}
+                    className="text-xs text-[#9D2449] hover:text-[#9D2449]/80 transition-colors cursor-pointer"
+                    disabled={descargarPDFMut.isPending}
+                  >
+                    PDF
+                  </button>
+                </>
+              )}
+              {editable && !isTimbrado && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); askDelete(row); }}
+                  className="text-xs text-danger hover:text-danger/80 transition-colors cursor-pointer"
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+          );
+        },
       },
     ],
-    [editable]
+    [editable, askTimbrar, askCancelar, handleDescargarXML, handleDescargarPDF]
   );
 
   const isSaving = createMut.isPending || updateMut.isPending;
@@ -376,8 +574,8 @@ export default function CFDIEmitidos() {
               label="UUID"
               value={form.uuid}
               onChange={(e) => set('uuid', e.target.value)}
-              placeholder="UUID del timbrado"
-              disabled={!!editing}
+              placeholder="Se asigna al timbrar"
+              disabled
             />
           </div>
 
@@ -418,6 +616,23 @@ export default function CFDIEmitidos() {
             />
           </div>
 
+          {/* Row 3b: Receptor Regimen Fiscal, Receptor CP */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Regimen Fiscal Receptor"
+              value={form.receptor_regimen}
+              onChange={(e) => set('receptor_regimen', e.target.value)}
+              options={regimenOptions}
+              placeholder="-- Seleccione regimen --"
+            />
+            <Input
+              label="Codigo Postal Receptor"
+              value={form.receptor_cp}
+              onChange={(e) => set('receptor_cp', e.target.value)}
+              placeholder="Ej. 06600"
+            />
+          </div>
+
           {/* Row 4: Uso CFDI, Metodo de Pago */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
@@ -437,6 +652,32 @@ export default function CFDIEmitidos() {
               required
             />
           </div>
+
+          {/* Row 4b: Forma de Pago, Moneda */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Forma de Pago"
+              value={form.forma_pago}
+              onChange={(e) => set('forma_pago', e.target.value)}
+              options={formaPagoOptions}
+              placeholder="-- Seleccione forma de pago --"
+            />
+            <Select
+              label="Moneda"
+              value={form.moneda}
+              onChange={(e) => set('moneda', e.target.value)}
+              options={monedaOptions}
+              placeholder="-- Seleccione moneda --"
+            />
+          </div>
+
+          {/* Row 4c: Descripcion */}
+          <Input
+            label="Descripcion del concepto"
+            value={form.descripcion}
+            onChange={(e) => set('descripcion', e.target.value)}
+            placeholder="Descripcion general del servicio o producto"
+          />
 
           {/* Row 5: Subtotal, IVA, Total */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -519,6 +760,116 @@ export default function CFDIEmitidos() {
         confirmText="Eliminar"
         loading={removeMut.isPending}
       />
+
+      {/* Timbrado confirmation dialog */}
+      <Modal
+        open={timbradoConfirmOpen}
+        onClose={() => { setTimbradoConfirmOpen(false); setToTimbrar(null); setTimbradoError(''); }}
+        title="Timbrar CFDI ante el SAT"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="bg-[#03c3ec]/10 border border-[#03c3ec]/30 rounded-md p-3">
+            <p className="text-sm text-text-primary">
+              Esta a punto de enviar el CFDI{' '}
+              <strong>{toTimbrar?.serie || ''}{toTimbrar?.serie && toTimbrar?.folio ? '-' : ''}{toTimbrar?.folio || ''}</strong>{' '}
+              al PAC Facturama para su timbrado ante el SAT.
+            </p>
+            <p className="text-xs text-text-muted mt-2">
+              Receptor: <strong>{toTimbrar?.receptor_nombre}</strong> ({toTimbrar?.receptor_rfc})<br />
+              Total: <strong>{fmtMoney(toTimbrar?.total)}</strong>
+            </p>
+          </div>
+
+          {timbradoError && (
+            <div className="bg-[#ff3e1d]/10 border border-[#ff3e1d]/30 rounded-md p-3">
+              <p className="text-sm text-[#e0360a] font-medium">Error al timbrar</p>
+              <p className="text-xs text-[#e0360a] mt-1">{timbradoError}</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2 border-t border-border">
+            <Button
+              variant="ghost"
+              onClick={() => { setTimbradoConfirmOpen(false); setToTimbrar(null); setTimbradoError(''); }}
+              disabled={timbrarMut.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="success"
+              onClick={confirmTimbrar}
+              loading={timbrarMut.isPending}
+            >
+              Confirmar Timbrado
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Cancelacion modal */}
+      <Modal
+        open={cancelModalOpen}
+        onClose={() => { setCancelModalOpen(false); setToCancelar(null); setCancelError(''); }}
+        title="Cancelar CFDI ante el SAT"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="bg-[#ff3e1d]/10 border border-[#ff3e1d]/30 rounded-md p-3">
+            <p className="text-sm text-text-primary">
+              Esta a punto de cancelar el CFDI{' '}
+              <strong>{toCancelar?.serie || ''}{toCancelar?.serie && toCancelar?.folio ? '-' : ''}{toCancelar?.folio || ''}</strong>{' '}
+              ante el SAT. Esta accion puede ser irreversible.
+            </p>
+            <p className="text-xs text-text-muted mt-2">
+              UUID: <strong>{toCancelar?.uuid || 'N/A'}</strong>
+            </p>
+          </div>
+
+          <Select
+            label="Motivo de Cancelacion"
+            value={cancelMotivo}
+            onChange={(e) => setCancelMotivo(e.target.value)}
+            options={motivoCancelOptions}
+            required
+          />
+
+          {cancelMotivo === '01' && (
+            <Input
+              label="UUID de Sustitucion"
+              value={cancelUuidSust}
+              onChange={(e) => setCancelUuidSust(e.target.value)}
+              placeholder="UUID del CFDI que sustituye"
+              required
+            />
+          )}
+
+          {cancelError && (
+            <div className="bg-[#ff3e1d]/10 border border-[#ff3e1d]/30 rounded-md p-3">
+              <p className="text-sm text-[#e0360a] font-medium">Error al cancelar</p>
+              <p className="text-xs text-[#e0360a] mt-1">{cancelError}</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2 border-t border-border">
+            <Button
+              variant="ghost"
+              onClick={() => { setCancelModalOpen(false); setToCancelar(null); setCancelError(''); }}
+              disabled={cancelarMut.isPending}
+            >
+              Volver
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmCancelar}
+              loading={cancelarMut.isPending}
+              disabled={cancelMotivo === '01' && !cancelUuidSust.trim()}
+            >
+              Confirmar Cancelacion
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

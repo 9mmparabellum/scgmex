@@ -458,9 +458,9 @@ export default function EstadosFinancieros() {
 
   // ── Export handlers ───────────────────────────────────────────────────
 
-  const handleExportPdf = useCallback(() => {
+  const handleExportPdf = useCallback(async () => {
     if (!generatedReporte) return;
-    generarPdfCONAC(generatedReporte, {
+    await generarPdfCONAC(generatedReporte, {
       ente: entePublico,
       ejercicio: ejercicioFiscal,
       periodo: periodoActual,
@@ -485,13 +485,13 @@ export default function EstadosFinancieros() {
     exportToExcel(allRows, excelCols, safeName);
   }, [generatedReporte]);
 
-  const handleExportAllPdf = useCallback(() => {
+  const handleExportAllPdf = useCallback(async () => {
     if (!periodoId) return;
     const contableKeys = reportKeys.filter((k) => CATALOGO_REPORTES[k]?.categoria === 'contable' && k !== 'NOTAS');
     for (const key of contableKeys) {
       try {
         const rep = generarReporte(key, unifiedData, entePublico, periodoActual, ejercicioFiscal);
-        generarPdfCONAC(rep, {
+        await generarPdfCONAC(rep, {
           ente: entePublico,
           ejercicio: ejercicioFiscal,
           periodo: periodoActual,

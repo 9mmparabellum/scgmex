@@ -62,6 +62,7 @@ export const ROUTES = {
   NOTAS_EF: '/reportes/notas',
   // Apertura del Ejercicio
   APERTURA: '/configuracion/apertura',
+  CARGA_DATOS: '/configuracion/carga-datos',
   // Tesoreria
   TESORERIA: '/tesoreria',
   CUENTAS_BANCARIAS: '/tesoreria/bancos',
