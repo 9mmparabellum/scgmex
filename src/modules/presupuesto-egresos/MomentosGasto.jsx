@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useList, useCreate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
+import { fetchMovimientosEgreso } from '../../services/presupuestoService';
 import { MOMENTOS_GASTO, TIPOS_MOVIMIENTO_PRESUPUESTAL } from '../../config/constants';
 import { exportToExcel } from '../../utils/exportHelpers';
 import DataTable from '../../components/ui/DataTable';
@@ -44,8 +46,10 @@ export default function MomentosGasto() {
     return f;
   }, [selectedMomento, filterPartida, filterPeriodo]);
 
-  const { data: movimientos = [], isLoading } = useList('movimiento_presupuestal_egreso', {
-    filter: queryFilter,
+  const { data: movimientos = [], isLoading } = useQuery({
+    queryKey: ['movimiento_presupuestal_egreso', entePublico?.id, queryFilter],
+    queryFn: () => fetchMovimientosEgreso(entePublico?.id, queryFilter),
+    enabled: !!entePublico?.id,
   });
 
   const { data: partidas = [] } = useList('partida_egreso', {

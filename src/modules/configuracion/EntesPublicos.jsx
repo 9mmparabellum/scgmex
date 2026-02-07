@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useList, useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
 import { seedPlanCuentasCONAC } from '../../services/catalogoService';
+import { supabase } from '../../config/supabase';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -208,11 +209,13 @@ export default function EntesPublicos() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
+      // Delete associated usuarios first (FK without CASCADE)
+      await supabase.from('usuarios').delete().eq('ente_id', deleteTarget.id);
       await removeMutation.mutateAsync(deleteTarget.id);
       setConfirmOpen(false);
       setDeleteTarget(null);
     } catch {
-      // Error handling is managed by react-query
+      // Error toast is shown by useRemove's onError
     }
   };
 

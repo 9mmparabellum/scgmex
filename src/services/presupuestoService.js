@@ -66,10 +66,11 @@ export async function fetchPartidasConTotales(enteId, ejercicioId) {
   }));
 }
 
-export async function fetchMovimientosEgreso(filter = {}) {
+export async function fetchMovimientosEgreso(enteId, filter = {}) {
   let query = supabase
     .from('movimiento_presupuestal_egreso')
-    .select('*, partida:partida_egreso(clave, descripcion, clasificador:clasificador_presupuestal!clasificador_id(codigo, nombre))')
+    .select('*, partida:partida_egreso!inner(clave, descripcion, ente_id, clasificador:clasificador_presupuestal!clasificador_id(codigo, nombre))')
+    .eq('partida_egreso.ente_id', enteId)
     .order('fecha', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -130,10 +131,11 @@ export async function fetchConceptosConTotales(enteId, ejercicioId) {
   }));
 }
 
-export async function fetchMovimientosIngreso(filter = {}) {
+export async function fetchMovimientosIngreso(enteId, filter = {}) {
   let query = supabase
     .from('movimiento_presupuestal_ingreso')
-    .select('*, concepto:concepto_ingreso(clave, descripcion, clasificador:clasificador_presupuestal!clasificador_id(codigo, nombre))')
+    .select('*, concepto:concepto_ingreso!inner(clave, descripcion, ente_id, clasificador:clasificador_presupuestal!clasificador_id(codigo, nombre))')
+    .eq('concepto_ingreso.ente_id', enteId)
     .order('fecha', { ascending: false })
     .order('created_at', { ascending: false });
 

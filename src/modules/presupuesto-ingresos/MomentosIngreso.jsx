@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useList, useCreate, useRemove } from '../../hooks/useCrud';
 import { useAppStore } from '../../stores/appStore';
+import { fetchMovimientosIngreso } from '../../services/presupuestoService';
 import { MOMENTOS_INGRESO, TIPOS_MOVIMIENTO_PRESUPUESTAL } from '../../config/constants';
 import { exportToExcel } from '../../utils/exportHelpers';
 import DataTable from '../../components/ui/DataTable';
@@ -44,8 +46,10 @@ export default function MomentosIngreso() {
     return f;
   }, [selectedMomento, filterConcepto, filterPeriodo]);
 
-  const { data: movimientos = [], isLoading } = useList('movimiento_presupuestal_ingreso', {
-    filter: queryFilter,
+  const { data: movimientos = [], isLoading } = useQuery({
+    queryKey: ['movimiento_presupuestal_ingreso', entePublico?.id, queryFilter],
+    queryFn: () => fetchMovimientosIngreso(entePublico?.id, queryFilter),
+    enabled: !!entePublico?.id,
   });
 
   const { data: conceptos = [] } = useList('concepto_ingreso', {
