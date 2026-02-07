@@ -6,6 +6,8 @@ import {
   descargarPDF,
   validarCFDISAT,
   verificarConexionPAC,
+  consultarCSDEnte,
+  subirCSDEnte,
   buildCFDIRequest,
 } from './facturamaPACService';
 
@@ -159,4 +161,4 @@ export async function validarCFDIRecibido(cfdiId) {
   return resultado;
 }
 
-export { verificarConexionPAC };
+export { verificarConexionPAC, consultarCSDEnte, subirCSDEnte };

@@ -10,7 +10,7 @@ async function facturamaFetch(endpoint, options = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Basic ${credentials}`,
+      Authorization: `Basic ${credentials}`,
       ...options.headers,
     },
   });
@@ -25,19 +25,80 @@ async function facturamaFetch(endpoint, options = {}) {
   return response;
 }
 
-// ═══ CFDI CREATION (Timbrado) ═══
+// ═══ MODE DETECTION ═══
+
+const isMulti = () => FACTURAMA_CONFIG.isMultiemisor();
+
+// ═══ CSD MANAGEMENT (Multiemisor) ═══
 
 /**
- * Map our internal tipo to Facturama CfdiType
+ * Upload CSD for a specific RFC (Multiemisor mode)
+ * In API Web mode, CSD is managed via the Facturama dashboard
  */
+export async function subirCSDEnte(rfc, cerBase64, keyBase64, password) {
+  if (!isMulti()) {
+    throw new Error(
+      'La carga de CSD por API requiere el modo Multiemisor. ' +
+        'En modo API Web, suba el CSD desde el dashboard de Facturama.'
+    );
+  }
+  const resp = await facturamaFetch('/api/lite/csds', {
+    method: 'POST',
+    body: JSON.stringify({
+      Rfc: rfc,
+      Certificate: cerBase64,
+      PrivateKey: keyBase64,
+      PrivateKeyPassword: password,
+    }),
+  });
+  return resp.json();
+}
+
+/**
+ * Get CSD status for a specific RFC (Multiemisor mode)
+ */
+export async function consultarCSDEnte(rfc) {
+  if (!isMulti()) {
+    // In API Web, check the single profile CSD
+    const resp = await facturamaFetch('/TaxEntity');
+    const profile = await resp.json();
+    return {
+      rfc: profile.Rfc,
+      hasCsd: !!(profile.Csd?.Certificate),
+      serialNumber: profile.Csd?.SerialNumber || '',
+      expirationDate: profile.Csd?.ExpirationDate || '',
+    };
+  }
+  try {
+    const resp = await facturamaFetch(`/api/lite/csds/${rfc}`);
+    const data = await resp.json();
+    return {
+      rfc,
+      hasCsd: true,
+      serialNumber: data.SerialNumber || '',
+      expirationDate: data.ExpirationDate || '',
+    };
+  } catch {
+    return { rfc, hasCsd: false, serialNumber: '', expirationDate: '' };
+  }
+}
+
+/**
+ * Delete CSD for a specific RFC (Multiemisor mode)
+ */
+export async function eliminarCSDEnte(rfc) {
+  if (!isMulti()) throw new Error('Solo disponible en modo Multiemisor.');
+  const resp = await facturamaFetch(`/api/lite/csds/${rfc}`, { method: 'DELETE' });
+  return resp.json();
+}
+
+// ═══ CFDI BUILDING ═══
+
 function mapTipoCFDI(tipo) {
   const map = { ingreso: 'I', egreso: 'E', traslado: 'T', nomina: 'N', pago: 'P' };
   return map[tipo] || 'I';
 }
 
-/**
- * Build tax objects for a concepto
- */
 function buildTaxes(concepto) {
   const taxes = [];
   if (concepto.iva_tasa !== undefined) {
@@ -54,27 +115,17 @@ function buildTaxes(concepto) {
   return taxes;
 }
 
-/**
- * Calculate item total including taxes
- */
 function calculateItemTotal(c) {
   const subtotal = Number(c.cantidad) * Number(c.precio_unitario);
   const iva = Number(c.iva_monto) || subtotal * 0.16;
   return subtotal + iva;
 }
 
-/**
- * Determine TaxObject based on taxes presence (CFDI 4.0 required field)
- */
 function getTaxObject(hasTaxes) {
-  return hasTaxes ? '02' : '01'; // 02=Si objeto de impuesto, 01=No objeto de impuesto
+  return hasTaxes ? '02' : '01';
 }
 
-/**
- * Build items array from form data
- */
 function buildItems(formData) {
-  // If formData has conceptos array, use them
   if (formData.conceptos?.length) {
     return formData.conceptos.map((c) => {
       const taxes = buildTaxes(c);
@@ -93,7 +144,6 @@ function buildItems(formData) {
       };
     });
   }
-  // Fallback: single concept from subtotal
   const hasTax = Number(formData.iva) > 0;
   return [
     {
@@ -106,15 +156,7 @@ function buildItems(formData) {
       Subtotal: Number(formData.subtotal) || 0,
       TaxObject: getTaxObject(hasTax),
       Taxes: hasTax
-        ? [
-            {
-              Name: 'IVA',
-              Rate: 0.16,
-              Total: Number(formData.iva) || 0,
-              Base: Number(formData.subtotal) || 0,
-              IsRetention: false,
-            },
-          ]
+        ? [{ Name: 'IVA', Rate: 0.16, Total: Number(formData.iva) || 0, Base: Number(formData.subtotal) || 0, IsRetention: false }]
         : [],
       Total: Number(formData.total) || 0,
     },
@@ -122,14 +164,15 @@ function buildItems(formData) {
 }
 
 /**
- * Build Facturama CFDI 4.0 request from our form data
+ * Build Facturama CFDI 4.0 request from form data + emisor (ente publico)
+ * emisor = { rfc, razon_social, regimen_fiscal, codigo_postal }
  */
 export function buildCFDIRequest(formData, emisor) {
-  return {
+  const base = {
     Folio: formData.folio || '',
     Serie: formData.serie || 'A',
     Currency: formData.moneda || 'MXN',
-    ExpeditionPlace: emisor.codigo_postal || '06600',
+    ExpeditionPlace: emisor.codigo_postal || '06300',
     PaymentConditions: formData.condiciones_pago || '',
     CfdiType: mapTipoCFDI(formData.tipo),
     PaymentForm: formData.forma_pago || '99',
@@ -139,32 +182,39 @@ export function buildCFDIRequest(formData, emisor) {
       Name: formData.receptor_nombre,
       CfdiUse: formData.uso_cfdi || 'G03',
       FiscalRegime: formData.receptor_regimen || '616',
-      TaxZipCode: formData.receptor_cp || '06600',
+      TaxZipCode: formData.receptor_cp || '06300',
     },
     Items: buildItems(formData),
   };
+
+  // In Multiemisor mode, include Issuer block (required by /api/lite/cfdis)
+  if (isMulti()) {
+    base.Issuer = {
+      Rfc: emisor.rfc,
+      Name: emisor.razon_social || emisor.nombre,
+      FiscalRegime: emisor.regimen_fiscal || '601',
+    };
+  }
+
+  return base;
 }
 
-/**
- * Send CFDI to Facturama for timbrado (stamping with SAT)
- * Returns the timbrado response with UUID, sello, etc.
- */
+// ═══ TIMBRADO ═══
+
 export async function timbrarCFDI(cfdiRequest) {
-  const resp = await facturamaFetch('/3/cfdis', {
+  const endpoint = isMulti() ? '/api/lite/cfdis' : '/3/cfdis';
+  const resp = await facturamaFetch(endpoint, {
     method: 'POST',
     body: JSON.stringify(cfdiRequest),
   });
   return resp.json();
 }
 
-/**
- * Cancel a previously timbrado CFDI
- * @param {string} facturamaCfdiId - Facturama internal ID
- * @param {string} motivo - Cancellation reason code (01-04)
- * @param {string} uuidSustitucion - Replacement UUID (required for motivo 01)
- */
+// ═══ CANCEL ═══
+
 export async function cancelarCFDI(facturamaCfdiId, motivo, uuidSustitucion = '') {
-  let endpoint = `/cfdi/${facturamaCfdiId}?type=issued&motive=${motivo}`;
+  const type = isMulti() ? 'issuedLite' : 'issued';
+  let endpoint = `/cfdi/${facturamaCfdiId}?type=${type}&motive=${motivo}`;
   if (motivo === '01' && uuidSustitucion) {
     endpoint += `&uuidReplacement=${uuidSustitucion}`;
   }
@@ -172,35 +222,30 @@ export async function cancelarCFDI(facturamaCfdiId, motivo, uuidSustitucion = ''
   return resp.json();
 }
 
-/**
- * Get CFDI status from Facturama
- */
+// ═══ CONSULT ═══
+
 export async function consultarCFDI(facturamaCfdiId) {
-  const resp = await facturamaFetch(`/cfdi/${facturamaCfdiId}?type=issued`);
+  const type = isMulti() ? 'issuedLite' : 'issued';
+  const resp = await facturamaFetch(`/cfdi/${facturamaCfdiId}?type=${type}`);
   return resp.json();
 }
 
-/**
- * Download CFDI XML (returns base64 string)
- */
+// ═══ DOWNLOAD ═══
+
 export async function descargarXML(facturamaCfdiId) {
-  const resp = await facturamaFetch(`/cfdi/xml/issued/${facturamaCfdiId}`);
-  const text = await resp.text();
-  return text;
+  const type = isMulti() ? 'issuedLite' : 'issued';
+  const resp = await facturamaFetch(`/cfdi/xml/${type}/${facturamaCfdiId}`);
+  return resp.text();
 }
 
-/**
- * Download CFDI PDF (returns base64 string)
- */
 export async function descargarPDF(facturamaCfdiId) {
-  const resp = await facturamaFetch(`/cfdi/pdf/issued/${facturamaCfdiId}`);
-  const text = await resp.text();
-  return text;
+  const type = isMulti() ? 'issuedLite' : 'issued';
+  const resp = await facturamaFetch(`/cfdi/pdf/${type}/${facturamaCfdiId}`);
+  return resp.text();
 }
 
-/**
- * Validate a received CFDI UUID against SAT
- */
+// ═══ VALIDATE ═══
+
 export async function validarCFDISAT(emisorRfc, receptorRfc, total, uuid) {
   const resp = await facturamaFetch(
     `/api/Cfdi/Validation/${emisorRfc}/${receptorRfc}/${total}/${uuid}`
@@ -208,9 +253,8 @@ export async function validarCFDISAT(emisorRfc, receptorRfc, total, uuid) {
   return resp.json();
 }
 
-/**
- * Get PAC connection status and profile info
- */
+// ═══ PAC STATUS ═══
+
 export async function verificarConexionPAC() {
   try {
     const resp = await facturamaFetch('/TaxEntity');
@@ -219,6 +263,7 @@ export async function verificarConexionPAC() {
     return {
       connected: true,
       sandbox: FACTURAMA_CONFIG.isSandbox(),
+      multiemisor: isMulti(),
       rfc: profile.Rfc,
       razonSocial: profile.TaxName,
       regimen: profile.FiscalRegime,
@@ -230,17 +275,13 @@ export async function verificarConexionPAC() {
   }
 }
 
-/**
- * Get clients (receptores) from Facturama
- */
+// ═══ CLIENTS (Receptores) ═══
+
 export async function obtenerClientes() {
   const resp = await facturamaFetch('/Client');
   return resp.json();
 }
 
-/**
- * Create/update a client (receptor) in Facturama
- */
 export async function crearCliente(clientData) {
   const resp = await facturamaFetch('/Client', {
     method: 'POST',
@@ -249,17 +290,15 @@ export async function crearCliente(clientData) {
   return resp.json();
 }
 
-/**
- * Search SAT product/service catalog
- */
+// ═══ CATALOGS ═══
+
 export async function buscarProductoSAT(keyword) {
-  const resp = await facturamaFetch(`/catalogs/ProductsOrServices?keyword=${encodeURIComponent(keyword)}`);
+  const resp = await facturamaFetch(
+    `/catalogs/ProductsOrServices?keyword=${encodeURIComponent(keyword)}`
+  );
   return resp.json();
 }
 
-/**
- * Get branch offices (lugares de expedición)
- */
 export async function obtenerSucursales() {
   const resp = await facturamaFetch('/BranchOffice');
   return resp.json();

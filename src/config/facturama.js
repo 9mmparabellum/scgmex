@@ -2,7 +2,6 @@
 export const FACTURAMA_CONFIG = {
   sandboxUrl: 'https://apisandbox.facturama.mx',
   productionUrl: 'https://api.facturama.mx',
-  // Credentials from env vars or Supabase config
   getApiUrl: () => import.meta.env.VITE_FACTURAMA_URL || 'https://apisandbox.facturama.mx',
   getCredentials: () => {
     const user = import.meta.env.VITE_FACTURAMA_USER || '';
@@ -11,6 +10,8 @@ export const FACTURAMA_CONFIG = {
   },
   isSandbox: () => !import.meta.env.VITE_FACTURAMA_URL || import.meta.env.VITE_FACTURAMA_URL.includes('sandbox'),
   hasCredentials: () => !!import.meta.env.VITE_FACTURAMA_USER,
+  // Multiemisor: cada ente tiene su propio RFC y CSD
+  isMultiemisor: () => import.meta.env.VITE_FACTURAMA_MULTIEMISOR === 'true',
 };
 
 // CFDI 4.0 Catalogs

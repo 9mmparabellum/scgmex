@@ -10,6 +10,8 @@ import {
   descargarCFDIPDF,
   validarCFDIRecibido,
   verificarConexionPAC,
+  consultarCSDEnte,
+  subirCSDEnte,
 } from '../services/cfdiService';
 
 export function useCFDIEmitidos() {
@@ -93,5 +95,29 @@ export function useConexionPAC() {
     queryFn: verificarConexionPAC,
     staleTime: 60000,
     retry: false,
+  });
+}
+
+// ── CSD per Ente hooks ──
+
+export function useCSDEnte(rfc) {
+  return useQuery({
+    queryKey: ['csd_ente', rfc],
+    queryFn: () => consultarCSDEnte(rfc),
+    enabled: !!rfc,
+    staleTime: 120000,
+    retry: false,
+  });
+}
+
+export function useSubirCSD() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rfc, cerBase64, keyBase64, password }) =>
+      subirCSDEnte(rfc, cerBase64, keyBase64, password),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['csd_ente', variables.rfc] });
+      qc.invalidateQueries({ queryKey: ['pac_status'] });
+    },
   });
 }

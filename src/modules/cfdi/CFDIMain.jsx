@@ -1,4 +1,5 @@
-import { useResumenCFDI, useConexionPAC } from '../../hooks/useCFDI';
+import { useResumenCFDI, useConexionPAC, useCSDEnte } from '../../hooks/useCFDI';
+import { useAppStore } from '../../stores/appStore';
 import { FACTURAMA_CONFIG } from '../../config/facturama';
 import Badge from '../../components/ui/Badge';
 
@@ -8,6 +9,8 @@ const fmtMoney = (n) =>
 export default function CFDIMain() {
   const { data: resumen = {}, isLoading } = useResumenCFDI();
   const { data: pacStatus, isLoading: pacLoading } = useConexionPAC();
+  const entePublico = useAppStore((s) => s.entePublico);
+  const { data: csdStatus } = useCSDEnte(entePublico?.rfc);
 
   const totalEmitidos = resumen.totalEmitidos || 0;
   const montoEmitidos = resumen.montoEmitidos || 0;
@@ -17,6 +20,7 @@ export default function CFDIMain() {
 
   const hasCredentials = FACTURAMA_CONFIG.hasCredentials();
   const isSandbox = FACTURAMA_CONFIG.isSandbox();
+  const isMulti = FACTURAMA_CONFIG.isMultiemisor();
 
   const cards = [
     { label: 'Total Emitidos', value: totalEmitidos, isMoney: false },
@@ -115,6 +119,56 @@ export default function CFDIMain() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Ente Emisor Info */}
+      {entePublico && (
+        <div className="bg-white rounded-lg card-shadow p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-xs text-text-muted uppercase tracking-wide">Ente Emisor</p>
+                <p className="text-sm font-semibold text-text-primary">{entePublico.nombre}</p>
+              </div>
+              <div className="border-l border-border pl-4">
+                <p className="text-xs text-text-muted">RFC</p>
+                <p className="text-sm font-mono font-semibold text-text-primary">
+                  {entePublico.rfc || <span className="text-[#e0360a]">No configurado</span>}
+                </p>
+              </div>
+              {entePublico.regimen_fiscal && (
+                <div className="border-l border-border pl-4">
+                  <p className="text-xs text-text-muted">Regimen</p>
+                  <p className="text-sm text-text-secondary">{entePublico.regimen_fiscal}</p>
+                </div>
+              )}
+              {entePublico.codigo_postal && (
+                <div className="border-l border-border pl-4">
+                  <p className="text-xs text-text-muted">C.P. Expedicion</p>
+                  <p className="text-sm text-text-secondary">{entePublico.codigo_postal}</p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {csdStatus?.hasCsd ? (
+                <Badge variant="success">CSD Activo</Badge>
+              ) : entePublico.rfc ? (
+                <Badge variant="danger">Sin CSD</Badge>
+              ) : null}
+              {isMulti && <Badge variant="info">Multiemisor</Badge>}
+            </div>
+          </div>
+          {entePublico.rfc && !entePublico.regimen_fiscal && (
+            <p className="text-xs text-[#e09600] mt-2">
+              Configure el Regimen Fiscal y Codigo Postal en Configuracion → Entes Publicos para habilitar timbrado.
+            </p>
+          )}
+          {!entePublico.rfc && (
+            <p className="text-xs text-[#e0360a] mt-2">
+              Este ente no tiene RFC configurado. Vaya a Configuracion → Entes Publicos para asignar su RFC.
+            </p>
+          )}
         </div>
       )}
 

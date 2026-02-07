@@ -40,6 +40,8 @@ const EMPTY_FORM = {
   entidad_federativa: '',
   municipio: '',
   rfc: '',
+  regimen_fiscal: '601',
+  codigo_postal: '',
   domicilio: '',
   titular: '',
   activo: true,
@@ -128,6 +130,8 @@ export default function EntesPublicos() {
       entidad_federativa: row.entidad_federativa ?? '',
       municipio: row.municipio ?? '',
       rfc: row.rfc ?? '',
+      regimen_fiscal: row.regimen_fiscal ?? '601',
+      codigo_postal: row.codigo_postal ?? '',
       domicilio: row.domicilio ?? '',
       titular: row.titular ?? '',
       activo: row.activo ?? true,
@@ -177,6 +181,8 @@ export default function EntesPublicos() {
       entidad_federativa: form.entidad_federativa.trim() || null,
       municipio: form.nivel_gobierno === 'municipal' ? (form.municipio.trim() || null) : null,
       rfc: form.rfc.trim() || null,
+      regimen_fiscal: form.regimen_fiscal || '601',
+      codigo_postal: form.codigo_postal.trim() || null,
       domicilio: form.domicilio.trim() || null,
       titular: form.titular.trim() || null,
       activo: form.activo,
@@ -329,9 +335,35 @@ export default function EntesPublicos() {
             />
             <Input
               label="RFC"
-              placeholder="RFC del ente publico"
+              placeholder="RFC del ente publico (para CFDI)"
               value={form.rfc}
-              onChange={(e) => handleChange('rfc', e.target.value)}
+              onChange={(e) => handleChange('rfc', e.target.value.toUpperCase())}
+            />
+          </div>
+
+          {/* Row: regimen_fiscal + codigo_postal (CFDI) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Regimen Fiscal"
+              placeholder="Seleccionar regimen..."
+              options={[
+                { value: '601', label: '601 - General de Ley Personas Morales' },
+                { value: '603', label: '603 - Personas Morales sin Fines de Lucro' },
+                { value: '610', label: '610 - Residentes en el Extranjero sin EP' },
+                { value: '620', label: '620 - Sociedades Cooperativas de Produccion' },
+                { value: '622', label: '622 - Actividades Agricolas, Ganaderas' },
+                { value: '623', label: '623 - Opcional para Grupos de Sociedades' },
+                { value: '624', label: '624 - Coordinados' },
+                { value: '626', label: '626 - Regimen Simplificado de Confianza' },
+              ]}
+              value={form.regimen_fiscal}
+              onChange={(val) => handleChange('regimen_fiscal', val)}
+            />
+            <Input
+              label="Codigo Postal (Expedicion CFDI)"
+              placeholder="Ej: 06300"
+              value={form.codigo_postal}
+              onChange={(e) => handleChange('codigo_postal', e.target.value)}
             />
           </div>
 
