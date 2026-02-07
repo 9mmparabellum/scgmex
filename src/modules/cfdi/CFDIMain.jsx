@@ -50,6 +50,12 @@ export default function CFDIMain() {
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#56ca00] inline-block" />
                 <span className="text-xs font-medium text-[#56ca00]">Conectado</span>
+                {pacStatus.rfc && (
+                  <span className="text-xs text-text-muted ml-1">RFC: {pacStatus.rfc}</span>
+                )}
+                {!pacStatus.hasCsd && (
+                  <Badge variant="danger">Sin CSD</Badge>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
@@ -60,6 +66,38 @@ export default function CFDIMain() {
           </div>
         </div>
       </div>
+
+      {/* CSD warning */}
+      {pacStatus?.connected && !pacStatus.hasCsd && (
+        <div className="bg-[#e0360a]/10 border border-[#e0360a]/30 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-[#e0360a] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <p className="text-sm font-semibold text-[#e0360a]">CSD no configurado - Timbrado no disponible</p>
+              <p className="text-xs text-text-muted mt-1">
+                Para timbrar CFDI, suba su Certificado de Sello Digital (CSD) en el{' '}
+                <a href={isSandbox ? 'https://sandbox.facturama.mx' : 'https://facturama.mx'}
+                   target="_blank" rel="noreferrer" className="text-guinda underline">
+                  dashboard de Facturama
+                </a>{' '}
+                → Perfil Fiscal → Carga de Sellos Digitales.
+                {isSandbox && (
+                  <span className="block mt-1">
+                    Para sandbox, descargue los{' '}
+                    <a href="https://cdnfacturama.azureedge.net/content/csd-pruebas.zip"
+                       target="_blank" rel="noreferrer" className="text-guinda underline">
+                      CSD de prueba
+                    </a>{' '}
+                    (password: 12345678a). Use RFC de prueba como EKU9003173C9.
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Credentials warning */}
       {!hasCredentials && (

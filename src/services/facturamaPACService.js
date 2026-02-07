@@ -64,25 +64,37 @@ function calculateItemTotal(c) {
 }
 
 /**
+ * Determine TaxObject based on taxes presence (CFDI 4.0 required field)
+ */
+function getTaxObject(hasTaxes) {
+  return hasTaxes ? '02' : '01'; // 02=Si objeto de impuesto, 01=No objeto de impuesto
+}
+
+/**
  * Build items array from form data
  */
 function buildItems(formData) {
   // If formData has conceptos array, use them
   if (formData.conceptos?.length) {
-    return formData.conceptos.map((c) => ({
-      ProductCode: c.clave_prod_serv || '01010101',
-      UnitCode: c.clave_unidad || 'ACT',
-      Unit: c.unidad || 'Actividad',
-      Description: c.descripcion,
-      IdentificationNumber: c.no_identificacion || '',
-      Quantity: Number(c.cantidad) || 1,
-      UnitPrice: Number(c.precio_unitario) || 0,
-      Subtotal: Number(c.cantidad) * Number(c.precio_unitario),
-      Taxes: buildTaxes(c),
-      Total: calculateItemTotal(c),
-    }));
+    return formData.conceptos.map((c) => {
+      const taxes = buildTaxes(c);
+      return {
+        ProductCode: c.clave_prod_serv || '01010101',
+        UnitCode: c.clave_unidad || 'ACT',
+        Unit: c.unidad || 'Actividad',
+        Description: c.descripcion,
+        IdentificationNumber: c.no_identificacion || '',
+        Quantity: Number(c.cantidad) || 1,
+        UnitPrice: Number(c.precio_unitario) || 0,
+        Subtotal: Number(c.cantidad) * Number(c.precio_unitario),
+        TaxObject: getTaxObject(taxes.length > 0),
+        Taxes: taxes,
+        Total: calculateItemTotal(c),
+      };
+    });
   }
   // Fallback: single concept from subtotal
+  const hasTax = Number(formData.iva) > 0;
   return [
     {
       ProductCode: '01010101',
@@ -92,15 +104,18 @@ function buildItems(formData) {
       Quantity: 1,
       UnitPrice: Number(formData.subtotal) || 0,
       Subtotal: Number(formData.subtotal) || 0,
-      Taxes: [
-        {
-          Name: 'IVA',
-          Rate: 0.16,
-          Total: Number(formData.iva) || 0,
-          Base: Number(formData.subtotal) || 0,
-          IsRetention: false,
-        },
-      ],
+      TaxObject: getTaxObject(hasTax),
+      Taxes: hasTax
+        ? [
+            {
+              Name: 'IVA',
+              Rate: 0.16,
+              Total: Number(formData.iva) || 0,
+              Base: Number(formData.subtotal) || 0,
+              IsRetention: false,
+            },
+          ]
+        : [],
       Total: Number(formData.total) || 0,
     },
   ];
@@ -135,7 +150,7 @@ export function buildCFDIRequest(formData, emisor) {
  * Returns the timbrado response with UUID, sello, etc.
  */
 export async function timbrarCFDI(cfdiRequest) {
-  const resp = await facturamaFetch('/2/cfdis', {
+  const resp = await facturamaFetch('/3/cfdis', {
     method: 'POST',
     body: JSON.stringify(cfdiRequest),
   });
@@ -194,14 +209,58 @@ export async function validarCFDISAT(emisorRfc, receptorRfc, total, uuid) {
 }
 
 /**
- * Get PAC connection status
+ * Get PAC connection status and profile info
  */
 export async function verificarConexionPAC() {
   try {
-    const resp = await facturamaFetch('/api/Client/Status');
-    const data = await resp.json();
-    return { connected: true, sandbox: FACTURAMA_CONFIG.isSandbox(), data };
+    const resp = await facturamaFetch('/TaxEntity');
+    const profile = await resp.json();
+    const hasCsd = !!(profile.Csd?.Certificate);
+    return {
+      connected: true,
+      sandbox: FACTURAMA_CONFIG.isSandbox(),
+      rfc: profile.Rfc,
+      razonSocial: profile.TaxName,
+      regimen: profile.FiscalRegime,
+      hasCsd,
+      profile,
+    };
   } catch (err) {
     return { connected: false, sandbox: FACTURAMA_CONFIG.isSandbox(), error: err.message };
   }
+}
+
+/**
+ * Get clients (receptores) from Facturama
+ */
+export async function obtenerClientes() {
+  const resp = await facturamaFetch('/Client');
+  return resp.json();
+}
+
+/**
+ * Create/update a client (receptor) in Facturama
+ */
+export async function crearCliente(clientData) {
+  const resp = await facturamaFetch('/Client', {
+    method: 'POST',
+    body: JSON.stringify(clientData),
+  });
+  return resp.json();
+}
+
+/**
+ * Search SAT product/service catalog
+ */
+export async function buscarProductoSAT(keyword) {
+  const resp = await facturamaFetch(`/catalogs/ProductsOrServices?keyword=${encodeURIComponent(keyword)}`);
+  return resp.json();
+}
+
+/**
+ * Get branch offices (lugares de expedición)
+ */
+export async function obtenerSucursales() {
+  const resp = await facturamaFetch('/BranchOffice');
+  return resp.json();
 }
