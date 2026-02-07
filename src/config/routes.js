@@ -107,4 +107,12 @@ export const ROUTES = {
   BENCHMARKING: '/benchmarking',
   // Reportes Avanzados
   REPORTES_AVANZADOS: '/reportes-avanzados',
+  // PWA / Offline
+  PWA_CONFIG: '/configuracion/pwa',
+  // e.firma / FIEL
+  EFIRMA: '/seguridad/efirma',
+  DOCUMENTOS_FIRMA: '/seguridad/efirma/documentos',
+  // IA Anomaly Detection
+  ANOMALIAS: '/anomalias',
+  REGLAS_ANOMALIA: '/anomalias/reglas',
 };

@@ -104,6 +104,13 @@ const DashboardRealtime = lazy(() => import('./modules/dashboard-realtime/Dashbo
 const Benchmarking = lazy(() => import('./modules/benchmarking/Benchmarking'));
 const ReportesAvanzados = lazy(() => import('./modules/reportes-avanzados/ReportesAvanzados'));
 
+// Batch 6: PWA/Offline + e.firma/FIEL + IA Anomaly Detection
+const PWAConfig = lazy(() => import('./modules/pwa/PWAConfig'));
+const EFirmaMain = lazy(() => import('./modules/efirma/EFirmaMain'));
+const DocumentosFirma = lazy(() => import('./modules/efirma/DocumentosFirma'));
+const AnomaliasMain = lazy(() => import('./modules/anomalias/AnomaliasMain'));
+const ReglasAnomalia = lazy(() => import('./modules/anomalias/ReglasAnomalia'));
+
 // Batch 2: Tesoreria + Conciliacion Bancaria
 const TesoreriaMain = lazy(() => import('./modules/tesoreria/TesoreriaMain'));
 const CuentasBancarias = lazy(() => import('./modules/tesoreria/CuentasBancarias'));
@@ -239,6 +246,13 @@ export default function App() {
             <Route path={ROUTES.DASHBOARD_REALTIME} element={<DashboardRealtime />} />
             <Route path={ROUTES.BENCHMARKING} element={<Benchmarking />} />
             <Route path={ROUTES.REPORTES_AVANZADOS} element={<ReportesAvanzados />} />
+
+            {/* Batch 6: PWA/Offline + e.firma/FIEL + IA Anomaly Detection */}
+            <Route path={ROUTES.PWA_CONFIG} element={<PWAConfig />} />
+            <Route path={ROUTES.EFIRMA} element={<EFirmaMain />} />
+            <Route path={ROUTES.DOCUMENTOS_FIRMA} element={<DocumentosFirma />} />
+            <Route path={ROUTES.ANOMALIAS} element={<AnomaliasMain />} />
+            <Route path={ROUTES.REGLAS_ANOMALIA} element={<ReglasAnomalia />} />
 
             {/* Batch 2: Tesoreria + Conciliacion Bancaria */}
             <Route path={ROUTES.TESORERIA} element={<TesoreriaMain />} />

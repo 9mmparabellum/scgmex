@@ -7,7 +7,7 @@ const PERMISOS_ROL = {
   super_admin: { access: '*', edit: '*' },
   admin_ente: { access: '*', edit: '*' },
   contador_general: {
-    access: ['configuracion', 'catalogo', 'contabilidad', 'presupuesto', 'patrimonio', 'deuda', 'reportes', 'cuenta_publica', 'transparencia', 'fondos', 'conciliacion', 'indicadores', 'tesoreria', 'cfdi', 'portal'],
+    access: ['configuracion', 'catalogo', 'contabilidad', 'presupuesto', 'patrimonio', 'deuda', 'reportes', 'cuenta_publica', 'transparencia', 'fondos', 'conciliacion', 'indicadores', 'tesoreria', 'cfdi', 'portal', 'anomalias'],
     edit: ['catalogo', 'contabilidad', 'presupuesto', 'conciliacion', 'cfdi'],
   },
   contador: {
@@ -27,7 +27,7 @@ const PERMISOS_ROL = {
     edit: ['patrimonio'],
   },
   auditor: {
-    access: ['catalogo', 'contabilidad', 'presupuesto', 'patrimonio', 'deuda', 'reportes', 'cuenta_publica', 'transparencia', 'fondos', 'conciliacion', 'mir', 'indicadores', 'tesoreria', 'adquisiciones', 'nomina', 'obra_publica', 'recaudacion', 'obligaciones', 'cfdi', 'portal'],
+    access: ['catalogo', 'contabilidad', 'presupuesto', 'patrimonio', 'deuda', 'reportes', 'cuenta_publica', 'transparencia', 'fondos', 'conciliacion', 'mir', 'indicadores', 'tesoreria', 'adquisiciones', 'nomina', 'obra_publica', 'recaudacion', 'obligaciones', 'cfdi', 'portal', 'anomalias'],
     edit: [],
   },
   transparencia: {

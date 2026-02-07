@@ -474,3 +474,73 @@ export const ESTADOS_REPORTE = {
   aprobado: { label: 'Aprobado', variant: 'success' },
   exportado: { label: 'Exportado', variant: 'primary' },
 };
+
+// ── Batch 6: PWA/Offline + e.firma/FIEL + IA Anomaly Detection ──
+
+export const ESTADOS_PWA = {
+  online: { label: 'En Linea', variant: 'success' },
+  offline: { label: 'Sin Conexion', variant: 'danger' },
+  sincronizando: { label: 'Sincronizando', variant: 'warning' },
+};
+
+export const TIPOS_CACHE = {
+  catalogo: 'Catalogos',
+  poliza: 'Polizas',
+  presupuesto: 'Presupuesto',
+  reporte: 'Reportes',
+  configuracion: 'Configuracion',
+};
+
+export const TIPOS_CERTIFICADO = {
+  fiel: 'FIEL (e.firma)',
+  sello: 'Sello Digital',
+  csd: 'CSD (Comprobantes)',
+};
+
+export const ESTADOS_CERTIFICADO = {
+  vigente: { label: 'Vigente', variant: 'success' },
+  por_vencer: { label: 'Por Vencer', variant: 'warning' },
+  vencido: { label: 'Vencido', variant: 'danger' },
+  revocado: { label: 'Revocado', variant: 'danger' },
+};
+
+export const TIPOS_DOCUMENTO_FIRMA = {
+  poliza: 'Poliza Contable',
+  estado_financiero: 'Estado Financiero',
+  cuenta_publica: 'Cuenta Publica',
+  contrato: 'Contrato',
+  oficio: 'Oficio',
+  otro: 'Otro',
+};
+
+export const ESTADOS_FIRMA = {
+  pendiente: { label: 'Pendiente', variant: 'warning' },
+  firmado: { label: 'Firmado', variant: 'success' },
+  rechazado: { label: 'Rechazado', variant: 'danger' },
+  cancelado: { label: 'Cancelado', variant: 'danger' },
+};
+
+export const TIPOS_ANOMALIA = {
+  monto_inusual: 'Monto Inusual',
+  patron_duplicado: 'Patron Duplicado',
+  horario_sospechoso: 'Horario Sospechoso',
+  desviacion_presupuestal: 'Desviacion Presupuestal',
+  secuencia_irregular: 'Secuencia Irregular',
+  proveedor_concentrado: 'Proveedor Concentrado',
+  otro: 'Otro',
+};
+
+export const NIVELES_RIESGO = {
+  bajo: { label: 'Bajo', variant: 'info' },
+  medio: { label: 'Medio', variant: 'warning' },
+  alto: { label: 'Alto', variant: 'danger' },
+  critico: { label: 'Critico', variant: 'danger' },
+};
+
+export const ESTADOS_ANOMALIA = {
+  detectada: { label: 'Detectada', variant: 'danger' },
+  en_revision: { label: 'En Revision', variant: 'warning' },
+  confirmada: { label: 'Confirmada', variant: 'danger' },
+  descartada: { label: 'Descartada', variant: 'default' },
+  resuelta: { label: 'Resuelta', variant: 'success' },
+};
