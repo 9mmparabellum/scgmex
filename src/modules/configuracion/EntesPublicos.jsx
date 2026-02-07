@@ -214,6 +214,7 @@ export default function EntesPublicos() {
       await removeMutation.mutateAsync(deleteTarget.id);
       setConfirmOpen(false);
       setDeleteTarget(null);
+      closeModal();
     } catch {
       // Error toast is shown by useRemove's onError
     }
