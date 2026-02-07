@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useList, useCreate, useUpdate, useRemove } from '../../hooks/useCrud';
+import { seedPlanCuentasCONAC } from '../../services/catalogoService';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -184,7 +185,14 @@ export default function EntesPublicos() {
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.id, ...payload });
       } else {
-        await createMutation.mutateAsync(payload);
+        const newEnte = await createMutation.mutateAsync(payload);
+        // Auto-seed CONAC Plan de Cuentas for the new ente
+        try {
+          const count = await seedPlanCuentasCONAC(newEnte.id);
+          console.log(`Plan de Cuentas CONAC: ${count} cuentas creadas para ente ${newEnte.clave}`);
+        } catch (seedErr) {
+          console.error('Error al crear Plan de Cuentas CONAC:', seedErr);
+        }
       }
       closeModal();
     } catch {
